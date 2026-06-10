@@ -96,7 +96,11 @@
 
     if (t.steps && t.steps.length) {
       h += '<div class="modal-section"><h4>' + icoSteps + "上手步驟</h4><ol class=\"steps\">";
-      h += t.steps.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("");
+      h += t.steps.map(function (s) {
+        if (typeof s === "string") return "<li>" + esc(s) + "</li>";
+        return '<li><b class="step-t">' + esc(s.t) + "</b>" +
+          (s.d ? '<span class="step-d">' + esc(s.d) + "</span>" : "") + "</li>";
+      }).join("");
       h += "</ol></div>";
     }
     if (t.example && t.example.code) {

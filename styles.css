@@ -329,7 +329,7 @@ body.modal-open { overflow: hidden; }
 .modal-overlay { position: absolute; inset: 0; background: rgba(8, 8, 18, .55); backdrop-filter: blur(3px); animation: modalFade .2s ease; }
 .modal-dialog {
   position: relative; z-index: 1; display: flex; flex-direction: column;
-  width: min(660px, 100%); max-height: 86vh; overflow-y: auto;
+  width: min(720px, 100%); max-height: 88vh; overflow-y: auto;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 22px; box-shadow: var(--shadow-hover);
   animation: modalPop .22s cubic-bezier(.2, .8, .2, 1);
@@ -350,8 +350,10 @@ body.modal-open { overflow: hidden; }
 .modal-section { margin-top: 24px; }
 .modal-section h4 { display: flex; align-items: center; gap: 8px; font-size: 1.04rem; font-weight: 800; margin-bottom: 14px; letter-spacing: -.01em; }
 .modal-section h4 svg { color: var(--accent); flex: none; }
-ol.steps { list-style: none; counter-reset: step; display: grid; gap: 11px; }
+ol.steps { list-style: none; counter-reset: step; display: grid; gap: 16px; }
 ol.steps li { position: relative; padding-left: 40px; color: var(--text-soft); line-height: 1.7; }
+ol.steps .step-t { display: block; color: var(--text); font-weight: 700; margin-bottom: 3px; }
+ol.steps .step-d { display: block; font-size: .92rem; }
 ol.steps li::before {
   counter-increment: step; content: counter(step);
   position: absolute; left: 0; top: 1px; width: 27px; height: 27px; border-radius: 8px;
