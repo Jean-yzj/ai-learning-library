@@ -15,6 +15,14 @@
   var icoSteps = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>';
   var icoCode = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg>';
   var icoTip = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg>';
+  var icoTarget = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12h.01"/></svg>';
+  var icoTable = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></svg>';
+
+  // 入門／中等／進階 → 彩色等級籤
+  function levelCell(v) {
+    var m = { "入門": "a", "中等": "b", "進階": "c" }[v];
+    return m ? '<span class="lvl lvl-' + m + '">' + esc(v) + "</span>" : esc(v);
+  }
 
   function tagsHtml(tags) {
     if (!tags || !tags.length) return "";
@@ -71,6 +79,25 @@
       '<div class="card-foot">' + tagsHtml(t.tags) +
       '<span class="go">查看教學' + arrow + "</span></div></button>";
   }
+  function compareHtml(c) {
+    if (!c || !c.rows || !c.rows.length) return "";
+    var head = "<tr><th>工具</th>" + c.cols.map(function (col) {
+      return "<th>" + esc(col) + "</th>";
+    }).join("") + "</tr>";
+    var body = c.rows.map(function (r) {
+      return "<tr>" + r.map(function (cell, i) {
+        return i === 0
+          ? '<th scope="row">' + esc(cell) + "</th>"
+          : "<td>" + levelCell(cell) + "</td>";
+      }).join("") + "</tr>";
+    }).join("");
+    return '<div class="cmp-block">' +
+      '<h4 class="cmp-title">' + icoTable + "快速比較</h4>" +
+      '<div class="table-wrap"><table class="cmp"><thead>' + head + "</thead><tbody>" + body + "</tbody></table></div>" +
+      (c.pick ? '<p class="cmp-pick"><span>怎麼選</span>' + esc(c.pick) + "</p>" : "") +
+      "</div>";
+  }
+
   if ($("toolsContainer")) {
     var idx = 0;
     $("toolsContainer").innerHTML = D.tools.map(function (g) {
@@ -78,7 +105,8 @@
       return '<div class="tool-group" data-group>' +
         '<div class="tool-group-head"><h3>' + esc(g.category) + "</h3>" +
         (g.desc ? "<p>" + esc(g.desc) + "</p>" : "") + "</div>" +
-        '<div class="grid grid-tools">' + cards + "</div></div>";
+        '<div class="grid grid-tools">' + cards + "</div>" +
+        compareHtml(g.compare) + "</div>";
     }).join("");
   }
 
@@ -93,6 +121,29 @@
     if (t.tagline) h += '<p class="modal-tagline">' + esc(t.tagline) + "</p>";
     h += tagsHtml(t.tags) + "</div>";
     if (t.intro) h += '<p class="modal-intro">' + esc(t.intro) + "</p>";
+
+    if (t.facts && t.facts.length) {
+      h += '<div class="facts">' + t.facts.map(function (f) {
+        return '<div class="fact"><b>' + esc(f.k) + "</b><span>" +
+          (f.k === "難度" ? levelCell(f.v) : esc(f.v)) + "</span></div>";
+      }).join("") + "</div>";
+    }
+    if (t.useCases && t.useCases.length) {
+      h += '<div class="modal-section"><h4>' + icoTarget + "它能幫你做什麼</h4><ul class=\"uc\">" +
+        t.useCases.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + "</ul></div>";
+    }
+    if ((t.pros && t.pros.length) || (t.cons && t.cons.length)) {
+      h += '<div class="modal-section pc">';
+      if (t.pros && t.pros.length) {
+        h += '<div class="pc-col ok"><h5>優點</h5><ul>' +
+          t.pros.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + "</ul></div>";
+      }
+      if (t.cons && t.cons.length) {
+        h += '<div class="pc-col warn"><h5>要注意</h5><ul>' +
+          t.cons.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + "</ul></div>";
+      }
+      h += "</div>";
+    }
 
     if (t.steps && t.steps.length) {
       h += '<div class="modal-section"><h4>' + icoSteps + "上手步驟</h4><ol class=\"steps\">";
