@@ -27,6 +27,7 @@
         <a href="#tools">該學的工具</a>
         <a href="#skills">該掌握的技能</a>
         <a href="#resources">學習資源</a>
+        <a href="#glossary">名詞速查</a>
         <a href="#news">最新動態</a>
         <a href="#follows">值得追蹤</a>
       </nav>
@@ -69,6 +70,14 @@
       <div class="path" id="pathContainer"></div>
     </section>
 
+    <section class="section plan-section" id="plan" hidden>
+      <div class="section-head">
+        <h2>我的專屬課表</h2>
+        <p>依你「30 秒測起點」的結果量身排好——該從哪步開始、先學哪些工具與技能、用什麼節奏走。可以列印或匯出帶著走。</p>
+      </div>
+      <div id="planContainer"></div>
+    </section>
+
     <section class="section section-alt" id="flow">
       <div class="section-head">
         <h2>工具怎麼彼此串接</h2>
@@ -88,9 +97,11 @@
             <input id="toolSearch" type="search" placeholder="搜尋工具，例如：Claude、影片、RAG…" aria-label="搜尋工具" />
           </label>
         </div>
+        <div class="filters" id="toolFilters" aria-label="篩選工具"></div>
+        <p class="filter-count" id="filterCount"></p>
       </div>
       <div id="toolsContainer"></div>
-      <p class="no-result" id="toolsNoResult" hidden>找不到符合的工具，換個關鍵字試試。</p>
+      <p class="no-result" id="toolsNoResult" hidden>找不到符合條件的工具，換個關鍵字或清除篩選試試。</p>
     </section>
 
     <section class="section section-alt" id="skills">
@@ -110,7 +121,22 @@
       <div class="grid grid-resources" id="resourcesContainer"></div>
     </section>
 
-    <section class="section section-alt" id="news">
+    <section class="section section-alt" id="glossary">
+      <div class="section-head">
+        <h2>名詞速查辭典</h2>
+        <p>看到不懂的字先別卡住。這裡用白話解釋常見術語——也可以隨時按 ⌘K（或 /）直接查。</p>
+        <div class="toolbar">
+          <label class="search">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input id="glossarySearch" type="search" placeholder="查名詞，例如：token、向量、RAG…" aria-label="搜尋名詞" />
+          </label>
+        </div>
+      </div>
+      <div class="grid grid-glossary" id="glossaryContainer"></div>
+      <p class="no-result" id="glossaryNoResult" hidden>查無此名詞，換個關鍵字試試。</p>
+    </section>
+
+    <section class="section" id="news">
       <div class="section-head">
         <h2>最新動態</h2>
         <p>本月大事與重點更新，幫你快速跟上。點任一則看原始報導。</p>
@@ -121,7 +147,7 @@
       <div class="timeline" id="newsContainer"></div>
     </section>
 
-    <section class="section" id="follows">
+    <section class="section section-alt" id="follows">
       <div class="section-head">
         <h2>值得追蹤</h2>
         <p>想看最新、適合自己讀的文章，與其每天滑社群，不如追這幾個高訊號來源——依平台分好類，點進去就是他們的最新貼文。</p>
@@ -130,7 +156,7 @@
       <p class="note" id="followsNote"></p>
     </section>
 
-    <section class="section section-alt" id="sources">
+    <section class="section" id="sources">
       <div class="section-head">
         <h2>資料來源</h2>
         <p>本站內容整理自下列公開來源，翻譯為繁體中文僅供學習參考；以原文為準。</p>

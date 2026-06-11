@@ -49,6 +49,33 @@
       : '<button type="button" class="conn-chip" data-tool-link="' + i + '">' + esc(name) + "</button>";
   }
 
+  // 工具的結構化屬性，供篩選器交叉過濾使用
+  var TOOL_FACETS = {
+    "Claude Code": { price: "付費", level: "中等", platform: ["終端機"] },
+    "GitHub Copilot": { price: "有免費額度", level: "入門", platform: ["桌面軟體"] },
+    "Cursor": { price: "有免費額度", level: "中等", platform: ["桌面軟體"] },
+    "Windsurf": { price: "有免費額度", level: "中等", platform: ["桌面軟體"] },
+    "LangChain": { price: "免費", level: "進階", platform: ["程式庫"] },
+    "LlamaIndex": { price: "免費", level: "中等", platform: ["程式庫"] },
+    "CrewAI": { price: "免費", level: "進階", platform: ["程式庫"] },
+    "Bolt.new": { price: "有免費額度", level: "入門", platform: ["瀏覽器"] },
+    "Replit": { price: "有免費額度", level: "中等", platform: ["瀏覽器"] },
+    "Claude": { price: "有免費額度", level: "入門", platform: ["瀏覽器", "桌面軟體", "手機 App"] },
+    "ChatGPT": { price: "有免費額度", level: "入門", platform: ["瀏覽器", "桌面軟體", "手機 App"] },
+    "Google Veo 3.1": { price: "付費", level: "中等", platform: ["瀏覽器"] },
+    "Runway": { price: "有免費額度", level: "中等", platform: ["瀏覽器"] },
+    "Midjourney v7": { price: "付費", level: "中等", platform: ["瀏覽器"] },
+    "Pika": { price: "有免費額度", level: "入門", platform: ["瀏覽器"] },
+  };
+  function facetsFor(name) { return TOOL_FACETS[name] || { price: "", level: "", platform: [] }; }
+
+  var FILTER_GROUPS = [
+    { key: "price", label: "價格", vals: ["免費", "有免費額度", "付費"] },
+    { key: "level", label: "難度", vals: ["入門", "中等", "進階"] },
+    { key: "platform", label: "平台", vals: ["瀏覽器", "桌面軟體", "終端機", "程式庫", "手機 App"] },
+  ];
+  var activeFilters = { price: {}, level: {}, platform: {} };
+
   var icoCheck = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
   var icoChain = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7.1-7.1l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7.1 7.1l1.7-1.7"/></svg>';
   var icoFlowArrow = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
@@ -184,8 +211,78 @@
       prog[i] = !prog[i];
       saveProg(prog);
       renderPath();
+      renderPlan();
     });
   }
+
+  // ---- 專屬課表（依測驗結果產生，可列印／匯出）----
+  var skillIndexByName = {};
+  D.skills.forEach(function (s, i) { skillIndexByName[s.name] = i; });
+  function skillChip(name) {
+    var i = skillIndexByName[name];
+    return i == null ? '<span class="conn-chip plain">' + esc(name) + "</span>"
+      : '<button type="button" class="conn-chip" data-skill-link="' + i + '">' + esc(name) + "</button>";
+  }
+  function renderPlan() {
+    var sec = $("plan");
+    if (!sec) return;
+    var p = loadProfile();
+    if (!p || !D.learningPath[p.stage]) { sec.hidden = true; return; }
+    sec.hidden = false;
+    var prog = loadProg();
+    var steps = D.learningPath.slice(p.stage);
+    var h = '<div class="plan-card">';
+    h += '<div class="plan-top"><div class="plan-goal-box"><span class="plan-tag">你的目標</span><b>' + esc(p.focus) + "</b></div>" +
+      '<div class="plan-actions no-print">' +
+      '<button type="button" class="mini-btn" data-plan-print>列印 / 存成 PDF</button>' +
+      '<button type="button" class="mini-btn" data-plan-export>匯出文字</button>' +
+      '<button type="button" class="mini-btn" data-quiz-start>重新測起點</button></div></div>';
+    h += '<p class="plan-pace"><span>節奏</span>' + esc(p.pace) + "</p>";
+    h += '<div class="plan-block"><h4>先把這幾個工具學起來</h4><div class="conn-chips">' + p.tools.map(toolChip).join("") + "</div></div>";
+    if (p.skills && p.skills.length) {
+      h += '<div class="plan-block"><h4>搭配練這些底層技能</h4><div class="conn-chips">' + p.skills.map(skillChip).join("") + "</div></div>";
+    }
+    h += '<div class="plan-block"><h4>你的學習順序（' + steps.length + " 步）</h4><ol class=\"plan-steps\">";
+    steps.forEach(function (s, k) {
+      var gi = p.stage + k;
+      var done = !!prog[gi];
+      h += '<li class="' + (done ? "done" : "") + '">' +
+        '<div class="plan-step-head"><b>第 ' + (gi + 1) + " 步：" + esc(s.title) + "</b>" +
+        (s.week ? '<span class="week">' + esc(s.week) + "</span>" : "") +
+        (done ? '<span class="plan-done-tag">' + icoCheck + "已完成</span>" : "") + "</div>" +
+        "<p>" + esc(s.action) + "</p>" +
+        (s.tools && s.tools.length ? '<div class="plan-step-tools"><span>用到：</span>' + s.tools.map(toolChip).join("") + "</div>" : "") +
+        '<p class="plan-goal"><span>達成</span>' + esc(s.goal) + "</p></li>";
+    });
+    h += "</ol></div>";
+    h += '<p class="plan-foot">這份課表依你的測驗結果產生，進度與下方「學習路徑」同步更新。</p></div>';
+    $("planContainer").innerHTML = h;
+  }
+  function exportPlanText() {
+    var p = loadProfile();
+    if (!p) return;
+    var L = ["AI 學習庫 — 我的專屬課表", "", "目標：" + p.focus, "節奏：" + p.pace, "", "先學的工具：" + p.tools.join("、")];
+    if (p.skills && p.skills.length) L.push("搭配技能：" + p.skills.join("、"));
+    L.push("", "學習順序：");
+    D.learningPath.slice(p.stage).forEach(function (s, k) {
+      var gi = p.stage + k;
+      L.push("");
+      L.push("第 " + (gi + 1) + " 步：" + s.title + (s.week ? "（" + s.week + "）" : ""));
+      L.push("  做什麼：" + s.action);
+      if (s.tools && s.tools.length) L.push("  用到：" + s.tools.join("、"));
+      L.push("  達成：" + s.goal);
+    });
+    L.push("", "— 由 AI 學習庫產生");
+    var blob = new Blob([L.join("\n")], { type: "text/plain;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "我的-AI-學習課表.txt";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  }
+  renderPlan();
 
   // ---- Flow map (工具怎麼彼此串接) ----
   if ($("flowContainer") && D.flow) {
@@ -204,8 +301,10 @@
   function toolCard(idx, t) {
     var hay = (t.name + " " + (t.tagline || "") + " " + (t.intro || "") + " " + (t.tags || []).join(" ")).toLowerCase();
     var known = isKnown(t.name);
+    var f = facetsFor(t.name);
     return '<button class="card tool-card' + (known ? " known" : "") + '" type="button" data-tool="' + idx + '" ' +
-      'data-search="' + esc(hay) + '">' +
+      'data-search="' + esc(hay) + '" data-price="' + esc(f.price) + '" data-level="' + esc(f.level) +
+      '" data-platform="' + esc(f.platform.join("|")) + '">' +
       (known ? '<span class="known-badge" title="已學會">' + icoCheck + "</span>" : "") +
       '<div class="card-top"><h4>' + esc(t.name) + "</h4></div>" +
       '<p class="tool-tagline">' + esc(t.tagline || "") + "</p>" +
@@ -382,30 +481,75 @@
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && modal && !modal.hidden) closeModal();
   });
-  // 串接籤：頁面上（流程圖、學習路徑）或彈窗內點到都直接開該工具教學
+  // 串接籤：頁面上（流程圖、學習路徑、課表）或彈窗內點到都直接開對應教學
   document.addEventListener("click", function (e) {
-    var chip = e.target.closest("[data-tool-link]");
-    if (chip) openModal(parseInt(chip.getAttribute("data-tool-link"), 10));
+    var tl = e.target.closest("[data-tool-link]");
+    if (tl) { openModal(parseInt(tl.getAttribute("data-tool-link"), 10)); return; }
+    var sl = e.target.closest("[data-skill-link]");
+    if (sl) { showModal(skillModalHtml(D.skills[parseInt(sl.getAttribute("data-skill-link"), 10)])); return; }
+    var trl = e.target.closest("[data-term-link]");
+    if (trl) { showModal(glossaryModalHtml(glossary[parseInt(trl.getAttribute("data-term-link"), 10)])); return; }
   });
 
-  // ---- Tool search ----
+  // ---- Tool search + 篩選器 ----
   var search = $("toolSearch");
-  if (search) {
-    search.addEventListener("input", function () {
-      var q = this.value.trim().toLowerCase();
-      var anyVisible = false;
-      document.querySelectorAll("[data-group]").forEach(function (group) {
-        var groupVisible = false;
-        group.querySelectorAll(".tool-card").forEach(function (card) {
-          var match = !q || card.getAttribute("data-search").indexOf(q) !== -1;
-          card.style.display = match ? "" : "none";
-          if (match) groupVisible = true;
-        });
-        group.style.display = groupVisible ? "" : "none";
-        if (groupVisible) anyVisible = true;
+  function filterCountActive(k) { return Object.keys(activeFilters[k]).length; }
+  function anyFilterActive() {
+    return FILTER_GROUPS.some(function (g) { return filterCountActive(g.key) > 0; });
+  }
+  function renderFilters() {
+    var box = $("toolFilters");
+    if (!box) return;
+    box.innerHTML = FILTER_GROUPS.map(function (g) {
+      return '<div class="filter-group"><span class="filter-label">' + esc(g.label) + "：</span>" +
+        g.vals.map(function (v) {
+          var on = activeFilters[g.key][v];
+          return '<button type="button" class="filter-chip' + (on ? " on" : "") + '" data-facet="' +
+            g.key + '" data-val="' + esc(v) + '">' + esc(v) + "</button>";
+        }).join("") + "</div>";
+    }).join("") + '<button type="button" class="filter-clear" data-filter-clear hidden>清除篩選</button>';
+  }
+  function applyToolFilter() {
+    var q = (search && search.value.trim().toLowerCase()) || "";
+    var shown = 0;
+    document.querySelectorAll("[data-group]").forEach(function (group) {
+      var groupVisible = false;
+      group.querySelectorAll(".tool-card").forEach(function (card) {
+        var ok = !q || card.getAttribute("data-search").indexOf(q) !== -1;
+        if (ok && filterCountActive("price")) ok = !!activeFilters.price[card.getAttribute("data-price")];
+        if (ok && filterCountActive("level")) ok = !!activeFilters.level[card.getAttribute("data-level")];
+        if (ok && filterCountActive("platform")) {
+          ok = (card.getAttribute("data-platform") || "").split("|").some(function (p) { return activeFilters.platform[p]; });
+        }
+        card.style.display = ok ? "" : "none";
+        if (ok) { groupVisible = true; shown++; }
       });
-      var nr = $("toolsNoResult");
-      if (nr) nr.hidden = anyVisible;
+      group.style.display = groupVisible ? "" : "none";
+    });
+    var nr = $("toolsNoResult");
+    if (nr) nr.hidden = shown > 0;
+    var fc = $("filterCount");
+    if (fc) fc.textContent = (anyFilterActive() || q) ? ("符合條件：" + shown + " / " + toolCount + " 項工具") : "";
+    var clr = document.querySelector("[data-filter-clear]");
+    if (clr) clr.hidden = !anyFilterActive();
+  }
+  renderFilters();
+  if (search) search.addEventListener("input", applyToolFilter);
+  if ($("toolFilters")) {
+    $("toolFilters").addEventListener("click", function (e) {
+      var chip = e.target.closest("[data-facet]");
+      if (chip) {
+        var k = chip.getAttribute("data-facet"), v = chip.getAttribute("data-val");
+        if (activeFilters[k][v]) delete activeFilters[k][v]; else activeFilters[k][v] = true;
+        chip.classList.toggle("on");
+        applyToolFilter();
+        return;
+      }
+      if (e.target.closest("[data-filter-clear]")) {
+        activeFilters = { price: {}, level: {}, platform: {} };
+        renderFilters();
+        applyToolFilter();
+      }
     });
   }
 
@@ -510,6 +654,53 @@
     }).join("");
   }
 
+  // ---- 名詞速查辭典 ----
+  var glossary = D.glossary || [];
+  var termIndex = {};
+  glossary.forEach(function (g, i) { termIndex[g.term] = i; });
+  function termChip(name) {
+    var i = termIndex[name];
+    return i == null ? '<span class="conn-chip plain">' + esc(name) + "</span>"
+      : '<button type="button" class="conn-chip" data-term-link="' + i + '">' + esc(name) + "</button>";
+  }
+  function glossaryModalHtml(g) {
+    var h = '<div class="modal-head"><h3 id="modalTitle">' + esc(g.term) + "</h3>" +
+      (g.en ? '<p class="modal-tagline">' + esc(g.en) + "</p>" : "") + "</div>" +
+      '<p class="modal-intro">' + esc(g.def) + "</p>";
+    if (g.see && g.see.length) {
+      h += '<div class="modal-section"><h4>' + icoChain + "相關名詞</h4>" +
+        '<div class="conn-chips">' + g.see.map(termChip).join("") + "</div></div>";
+    }
+    return h;
+  }
+  if ($("glossaryContainer")) {
+    $("glossaryContainer").innerHTML = glossary.map(function (g, i) {
+      var hay = (g.term + " " + (g.en || "") + " " + g.def).toLowerCase();
+      return '<button type="button" class="card term-card" data-term="' + i + '" data-search="' + esc(hay) + '">' +
+        '<div class="term-head"><h4>' + esc(g.term) + "</h4>" +
+        (g.en ? '<span class="term-en">' + esc(g.en) + "</span>" : "") + "</div>" +
+        "<p>" + esc(g.def) + "</p></button>";
+    }).join("");
+    $("glossaryContainer").addEventListener("click", function (e) {
+      var c = e.target.closest("[data-term]");
+      if (c) showModal(glossaryModalHtml(glossary[parseInt(c.getAttribute("data-term"), 10)]));
+    });
+  }
+  var glossarySearch = $("glossarySearch");
+  if (glossarySearch) {
+    glossarySearch.addEventListener("input", function () {
+      var q = this.value.trim().toLowerCase();
+      var shown = 0;
+      document.querySelectorAll("#glossaryContainer .term-card").forEach(function (card) {
+        var ok = !q || card.getAttribute("data-search").indexOf(q) !== -1;
+        card.style.display = ok ? "" : "none";
+        if (ok) shown++;
+      });
+      var nr = $("glossaryNoResult");
+      if (nr) nr.hidden = shown > 0;
+    });
+  }
+
   // ---- 起點測驗（30 秒找出你的起點）----
   var QUIZ = [
     { q: "你寫過程式嗎？", key: "exp", opts: [
@@ -543,7 +734,13 @@
       : a.time === "high"
         ? "時間充足：前三步可以併成兩週衝完，直接進到動手做。"
         : "每週 2–5 小時：照路徑上的建議時間走，剛剛好。";
-    return { stage: stage, tools: tools, focus: focus, pace: pace };
+    var skillMap = {
+      build: ["提示工程（Prompt Engineering）", "AI 素養（AI Literacy）"],
+      data: ["RAG 檢索強化生成", "提示工程（Prompt Engineering）"],
+      auto: ["AI 代理與多代理協作", "提示工程（Prompt Engineering）"],
+      visual: ["提示工程（Prompt Engineering）", "AI 素養（AI Literacy）"],
+    };
+    return { stage: stage, tools: tools, focus: focus, pace: pace, skills: skillMap[a.goal] || skillMap.build };
   }
 
   function quizHtml() {
@@ -566,7 +763,8 @@
     h += '<div class="modal-section"><h4>' + icoTarget + "先把這幾個工具學起來</h4>" +
       '<div class="conn-chips">' + p.tools.map(toolChip).join("") + "</div></div>" +
       '<div class="modal-foot">' +
-      '<button type="button" class="btn btn-primary" data-goto-step="' + p.stage + '">帶我去第 ' + (p.stage + 1) + " 步</button>" +
+      '<button type="button" class="btn btn-primary" data-show-plan>看我的完整課表</button>' +
+      '<button type="button" class="btn btn-ghost" data-goto-step="' + p.stage + '">帶我去第 ' + (p.stage + 1) + " 步</button>" +
       '<button type="button" class="btn btn-ghost" data-quiz-start>重新測一次</button></div>';
     return h;
   }
@@ -583,6 +781,7 @@
       var p = computeProfile(quizAnswers);
       saveProfile(p);
       renderPath();
+      renderPlan();
       modalBody.innerHTML = profileResultHtml(p);
     }
   }
@@ -666,13 +865,16 @@
     D.follows.forEach(function (f) {
       ix.push({ g: "追蹤", title: f.name, sub: f.platform || "", hay: (f.name + " " + f.handle + " " + f.desc).toLowerCase(), act: { k: "url", u: f.url } });
     });
-    [["學習路徑", "#path"], ["串接地圖", "#flow"], ["該學的工具", "#tools"], ["該掌握的技能", "#skills"], ["學習資源", "#resources"], ["最新動態", "#news"], ["值得追蹤", "#follows"]].forEach(function (s) {
+    glossary.forEach(function (g, i) {
+      ix.push({ g: "名詞", title: g.term, sub: g.en || "", hay: (g.term + " " + (g.en || "") + " " + g.def).toLowerCase(), act: { k: "term", i: i } });
+    });
+    [["學習路徑", "#path"], ["串接地圖", "#flow"], ["該學的工具", "#tools"], ["該掌握的技能", "#skills"], ["學習資源", "#resources"], ["名詞速查", "#glossary"], ["最新動態", "#news"], ["值得追蹤", "#follows"]].forEach(function (s) {
       ix.push({ g: "前往區塊", title: s[0], sub: "跳到該區塊", hay: s[0].toLowerCase(), act: { k: "goto", sel: s[1] } });
     });
     return ix;
   }
   var palIndex = buildPalIndex();
-  var PAL_ORDER = ["工具", "技能", "學習路徑", "課程", "動態", "追蹤", "前往區塊"];
+  var PAL_ORDER = ["工具", "技能", "名詞", "學習路徑", "課程", "動態", "追蹤", "前往區塊"];
 
   function renderPal(q) {
     q = (q || "").trim().toLowerCase();
@@ -718,6 +920,7 @@
     var a = it.act;
     if (a.k === "tool") openModal(a.i);
     else if (a.k === "skill") showModal(skillModalHtml(D.skills[a.i]));
+    else if (a.k === "term") showModal(glossaryModalHtml(glossary[a.i]));
     else if (a.k === "step") scrollToStep(a.i);
     else if (a.k === "url") window.open(a.u, "_blank", "noopener");
     else if (a.k === "goto") { var el = document.querySelector(a.sel); if (el) el.scrollIntoView({ behavior: "smooth" }); }
@@ -792,6 +995,19 @@
     if (e.target.closest("[data-quiz-start]")) { startQuiz(); return; }
     var gs = e.target.closest("[data-goto-step]");
     if (gs) { closeModal(); scrollToStep(parseInt(gs.getAttribute("data-goto-step"), 10)); return; }
+    if (e.target.closest("[data-show-plan]")) {
+      closeModal();
+      renderPlan();
+      var ps = $("plan");
+      if (ps && !ps.hidden) ps.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+    if (e.target.closest("[data-plan-print]")) {
+      document.body.classList.add("printing");
+      window.print();
+      return;
+    }
+    if (e.target.closest("[data-plan-export]")) { exportPlanText(); return; }
     if (e.target.closest("[data-export]")) { exportData(); return; }
     if (e.target.closest("[data-import-btn]")) { if (importFile) importFile.click(); return; }
     if (e.target.closest("[data-clear]")) {
@@ -803,6 +1019,8 @@
       }
     }
   });
+
+  window.addEventListener("afterprint", function () { document.body.classList.remove("printing"); });
 
   // ---- Theme toggle ----
   var toggle = $("themeToggle");

@@ -1347,6 +1347,33 @@ window.SITE_DATA = {
   followsNote:
     "這些是精選整理（非即時抓取）。點進去就能看到他們在 X / Threads 上的最新貼文。",
 
+  // 名詞速查辭典（⌘K 可直接查；卡片可互相跳轉）
+  glossary: [
+    { term: "API", en: "Application Programming Interface", def: "讓兩個程式互相溝通的窗口。你寫的程式透過 AI 公司的 API「呼叫」模型、拿回結果——學會接 API，就能把 AI 裝進自己的工具裡。", see: ["API 金鑰", "Token"] },
+    { term: "API 金鑰", en: "API Key", def: "一串像密碼的字串，證明「這個請求是你發的」，用來計費與權限控管。請收好、別外流，也別寫死在前端程式裡（用環境變數）。", see: ["API", "環境變數"] },
+    { term: "Token", en: "詞元", def: "模型處理文字的最小單位，約 0.7 個英文字、或 1～2 個中文字。模型的長度上限與 API 費用都以 token 計算。", see: ["上下文視窗", "LLM 大型語言模型"] },
+    { term: "LLM 大型語言模型", en: "Large Language Model", def: "用海量文字訓練、擅長「接下一個字」的模型。Claude、ChatGPT 背後都是 LLM。", see: ["模型", "Token"] },
+    { term: "模型", en: "Model", def: "訓練完成、能生成或預測的 AI 本體。不同模型擅長的事、速度與價格都不同，選對模型很重要。", see: ["LLM 大型語言模型", "參數"] },
+    { term: "提示", en: "Prompt", def: "你給 AI 的指令或問題。寫得好不好，直接決定產出品質——這是最划算的一項技能。", see: ["提示工程"] },
+    { term: "提示工程", en: "Prompt Engineering", def: "有系統地設計提示（角色、目標、限制、範例），讓產出更穩、更準。本質是把需求想清楚，而不是背咒語。", see: ["提示"] },
+    { term: "RAG 檢索強化生成", en: "Retrieval-Augmented Generation", def: "先從你的文件「檢索」相關片段，再讓 AI 根據這些片段回答，大幅降低亂掰，是做內部知識助手的關鍵。", see: ["向量", "向量資料庫", "幻覺"] },
+    { term: "向量", en: "Embedding", def: "把文字轉成一串數字，語意越接近、數字距離越近，讓電腦能「用意思」而非「用關鍵字」搜尋。", see: ["向量資料庫", "RAG 檢索強化生成"] },
+    { term: "向量資料庫", en: "Vector Database", def: "專門儲存與搜尋向量的資料庫（如 Chroma、pgvector），是 RAG 與 AI 記憶的基礎元件。", see: ["向量", "RAG 檢索強化生成"] },
+    { term: "幻覺", en: "Hallucination", def: "AI 一本正經地講錯或瞎掰。對重要資訊一定要求它附來源、並自己查證。", see: ["RAG 檢索強化生成"] },
+    { term: "代理", en: "Agent", def: "會自己規劃步驟、呼叫工具、看結果再調整的 AI，而不只是一問一答。多步驟任務的未來形態。", see: ["MCP"] },
+    { term: "MCP", en: "Model Context Protocol", def: "一套讓 AI 連接外部工具與資料的開放標準，Claude 等都支援。有了它，AI 能讀你的檔案、查資料庫、操作軟體。", see: ["代理", "API"] },
+    { term: "上下文視窗", en: "Context Window", def: "模型一次能「讀進」的 token 上限。超過就會忘掉前面的內容，所以長對話要適度精簡或分段。", see: ["Token"] },
+    { term: "微調", en: "Fine-tuning", def: "用你自己的資料再訓練模型，讓它更貼合特定任務。多數情況先用 RAG 就夠了，不必微調。", see: ["RAG 檢索強化生成", "模型"] },
+    { term: "推理 / 思考", en: "Reasoning", def: "模型在回答前先「想一想」、分步推導，通常更準，但較慢也較貴。複雜題目才值得開。", see: ["模型"] },
+    { term: "參數", en: "Parameters", def: "模型內部「旋鈕」的數量，常以 B（十億）計。數字越大不一定越好，要看任務與成本。", see: ["模型", "開源 / 開放權重"] },
+    { term: "開源 / 開放權重", en: "Open Source / Open Weights", def: "程式或模型公開、可自由使用與修改。開放權重讓你能自架模型、壓低 API 成本。", see: ["參數"] },
+    { term: "部署", en: "Deploy", def: "把做好的東西放上網路、讓別人能打開來用。本站就是用 Zeabur 推一下程式就自動上線。", see: ["前端 / 後端"] },
+    { term: "前端 / 後端", en: "Frontend / Backend", def: "前端是使用者看得到、能點的畫面；後端是背後處理資料與邏輯的伺服器。", see: ["部署"] },
+    { term: "終端機", en: "Terminal", def: "用打字下指令操作電腦的視窗。Mac 內建叫「終端機」，Windows 可用 PowerShell——很多開發工具都從這裡啟動。", see: ["npm"] },
+    { term: "環境變數", en: "Environment Variable", def: "存在系統裡的設定值（像 API 金鑰），讓程式去讀取，又不必把秘密寫死在程式碼裡。", see: ["API 金鑰", "終端機"] },
+    { term: "npm", en: "Node Package Manager", def: "Node.js 的套件管理工具。用 npm install 一行指令，就能裝進別人寫好的程式庫。", see: ["終端機"] },
+  ],
+
   // 各區塊原始資料來源（皆為搜尋取得的真實連結）
   sources: [
     { label: "Best AI Tools for Developers 2026 — daily.dev", url: "https://daily.dev/blog/best-ai-tools-learn-developers/" },
