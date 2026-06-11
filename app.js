@@ -87,7 +87,7 @@
   function loadKnown() {
     try { var a = JSON.parse(localStorage.getItem(KNOWN_KEY)); return Array.isArray(a) ? a : []; } catch (e) { return []; }
   }
-  function saveKnown(a) { try { localStorage.setItem(KNOWN_KEY, JSON.stringify(a)); } catch (e) {} }
+  function saveKnown(a) { try { localStorage.setItem(KNOWN_KEY, JSON.stringify(a)); } catch (e) {} schedulePush(); }
   function isKnown(name) { return loadKnown().indexOf(name) !== -1; }
   function toggleKnown(name) {
     var a = loadKnown(); var i = a.indexOf(name);
@@ -101,11 +101,12 @@
     var o = loadNotes();
     if (text) o[name] = text; else delete o[name];
     try { localStorage.setItem(NOTES_KEY, JSON.stringify(o)); } catch (e) {}
+    schedulePush();
   }
   function loadProfile() {
     try { return JSON.parse(localStorage.getItem(PROFILE_KEY)); } catch (e) { return null; }
   }
-  function saveProfile(p) { try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch (e) {} }
+  function saveProfile(p) { try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch (e) {} schedulePush(); }
 
   function patchCard(i) {
     var card = document.querySelector('.tool-card[data-tool="' + i + '"]');
@@ -145,6 +146,7 @@
   }
   function saveProg(a) {
     try { localStorage.setItem(PROG_KEY, JSON.stringify(a)); } catch (e) {}
+    schedulePush();
   }
 
   function renderPath() {
@@ -157,8 +159,10 @@
     for (var k = 0; k < total; k++) { if (!prog[k]) { nextIdx = k; break; } }
     var profile = loadProfile();
 
+    var syncOn = !!(loadSync() && loadSync().code);
     var dash = '<div class="path-progress">' +
-      '<div class="path-progress-head"><b>我的學習儀表板</b><span>進度只存在這台裝置</span></div>' +
+      '<div class="path-progress-head"><b>我的學習儀表板</b><span>' +
+      (syncOn ? "已啟用雲端同步" : "進度只存在這台裝置") + "</span></div>" +
       '<div class="dash-bar"><div class="lab"><span>路徑進度</span><span>' + doneCount + " / " + total + '</span></div>' +
       '<div class="bar"><i style="width:' + Math.round((doneCount / total) * 100) + '%"></i></div></div>' +
       '<div class="dash-bar"><div class="lab"><span>已學會的工具</span><span>' + knownCount + " / " + toolCount + '</span></div>' +
@@ -177,6 +181,7 @@
     }
     dash += '<div class="dash-actions">' +
       '<button type="button" class="mini-btn" data-quiz-start>' + (profile ? "重新測起點" : "30 秒測你的起點") + "</button>" +
+      '<button type="button" class="mini-btn mini-btn-accent" data-sync>' + (syncOn ? "雲端同步設定" : "啟用雲端同步") + "</button>" +
       '<button type="button" class="mini-btn" data-export>匯出進度</button>' +
       '<button type="button" class="mini-btn" data-import-btn>匯入進度</button>' +
       '<button type="button" class="mini-btn" data-clear>清除全部</button>' +
@@ -838,6 +843,134 @@
     });
   }
 
+  // ---- 雲端同步（用一組同步碼跨裝置取回進度與筆記）----
+  var SYNC_KEY = "ai-lib-sync";
+  var pushTimer = null;
+  function loadSync() { try { return JSON.parse(localStorage.getItem(SYNC_KEY)); } catch (e) { return null; } }
+  function saveSync(o) { try { localStorage.setItem(SYNC_KEY, JSON.stringify(o)); } catch (e) {} }
+  function clearSync() { try { localStorage.removeItem(SYNC_KEY); } catch (e) {} }
+  function genCode() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID().replace(/-/g, "");
+    var s = "", c = "abcdefghijklmnopqrstuvwxyz0123456789";
+    for (var i = 0; i < 32; i++) s += c[Math.floor(Math.random() * c.length)];
+    return s;
+  }
+  function gatherData() { return { progress: loadProg(), known: loadKnown(), notes: loadNotes(), profile: loadProfile() }; }
+  function applyData(d) {
+    if (!d) return;
+    if (Array.isArray(d.progress)) localStorage.setItem(PROG_KEY, JSON.stringify(d.progress));
+    if (Array.isArray(d.known)) localStorage.setItem(KNOWN_KEY, JSON.stringify(d.known));
+    if (d.notes && typeof d.notes === "object") localStorage.setItem(NOTES_KEY, JSON.stringify(d.notes));
+    if (d.profile) localStorage.setItem(PROFILE_KEY, JSON.stringify(d.profile));
+  }
+  function cloudPush(cb) {
+    var s = loadSync();
+    if (!s || !s.code) { if (cb) cb(false, "not enabled"); return; }
+    fetch("/api/sync", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: s.code, payload: gatherData() }) })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) { if (cb) cb(false, res.j && res.j.error); return; }
+        s.updatedAt = res.j.updatedAt; saveSync(s);
+        if (cb) cb(true, res.j.updatedAt);
+      })
+      .catch(function () { if (cb) cb(false, "network"); });
+  }
+  function cloudPull(code, cb) {
+    fetch("/api/sync?code=" + encodeURIComponent(code))
+      .then(function (r) {
+        if (r.status === 404) { cb(false, "notfound"); return; }
+        return r.json().then(function (j) { if (!r.ok) cb(false, j && j.error); else cb(true, j); });
+      })
+      .catch(function () { cb(false, "network"); });
+  }
+  function schedulePush() {
+    var s = loadSync();
+    if (!s || !s.code) return;
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(function () { cloudPush(); }, 1500);
+  }
+  function fmtTime(iso) { try { return new Date(iso).toLocaleString("zh-TW", { hour12: false }); } catch (e) { return iso; } }
+  function setSyncMsg(t, kind) {
+    var el = $("syncMsg");
+    if (el) { el.textContent = t || ""; el.className = "sync-msg" + (kind ? " " + kind : ""); }
+  }
+  function syncErr(info) {
+    if (info === "cloud sync not available") return "雲端同步暫時無法使用（伺服器尚未設定資料庫）。你的資料仍安全存在本機，也可用「匯出進度」備份。";
+    if (info === "network") return "連線失敗，請檢查網路後再試。";
+    return "發生問題：" + (info || "未知錯誤") + "。資料仍安全存在本機。";
+  }
+  function syncModalHtml(opts) {
+    opts = opts || {};
+    var s = loadSync();
+    var h = '<div class="modal-head"><h3 id="modalTitle">雲端同步</h3>' +
+      '<p class="modal-tagline">用一組同步碼，在其他裝置取回你的進度、筆記與課表。</p></div>';
+    if (s && s.code && !opts.linking) {
+      h += '<p class="info-box"><span>已啟用</span>下面這組同步碼就是你的鑰匙，請收好。在新裝置點「我已經有同步碼」貼上它，就能取回全部資料。</p>';
+      h += '<div class="sync-code"><code>' + esc(s.code) + '</code><button type="button" class="mini-btn" data-sync-action="copy">複製</button></div>';
+      if (s.updatedAt) h += '<p class="sync-status">上次同步：' + esc(fmtTime(s.updatedAt)) + "</p>";
+      h += '<p class="sync-msg" id="syncMsg"></p>';
+      h += '<div class="modal-foot">' +
+        '<button type="button" class="btn btn-primary" data-sync-action="push">立即上傳這台</button>' +
+        '<button type="button" class="btn btn-ghost" data-sync-action="pull-self">從雲端覆蓋這台</button>' +
+        '<button type="button" class="btn btn-ghost" data-sync-action="disable">停用同步</button></div>';
+      h += '<p class="sync-note">同步碼等同密碼，任何人有它都能看到你的資料；內容僅含學習進度與筆記，透過加密連線傳輸。本站不需要你的 email 或密碼。</p>';
+    } else if (opts.linking) {
+      h += '<div class="modal-section"><h4>輸入現有同步碼</h4>' +
+        '<input class="sync-input" id="syncCodeInput" placeholder="貼上你在另一台裝置產生的同步碼" autocomplete="off" /></div>';
+      h += '<p class="sync-msg" id="syncMsg"></p>';
+      h += '<div class="modal-foot"><button type="button" class="btn btn-primary" data-sync-action="link-confirm">連結並下載</button>' +
+        '<button type="button" class="btn btn-ghost" data-sync-action="back">返回</button></div>';
+    } else {
+      h += '<p class="modal-intro">目前你的進度、已學會標記、筆記與課表只存在這台裝置（清快取或換裝置就會不見）。啟用雲端同步後，換手機、換電腦都能用同一組同步碼取回。</p>';
+      h += '<p class="sync-msg" id="syncMsg"></p>';
+      h += '<div class="modal-foot"><button type="button" class="btn btn-primary" data-sync-action="enable">啟用並上傳目前進度</button>' +
+        '<button type="button" class="btn btn-ghost" data-sync-action="link">我已經有同步碼</button></div>';
+    }
+    return h;
+  }
+  function openSync(opts) { showModal(syncModalHtml(opts)); }
+  function handleSync(action) {
+    var s = loadSync();
+    if (action === "enable") {
+      setSyncMsg("產生同步碼並上傳中…");
+      var code = genCode();
+      saveSync({ code: code });
+      cloudPush(function (ok, info) {
+        if (ok) { renderPath(); openSync(); }
+        else { clearSync(); setSyncMsg(syncErr(info), "err"); }
+      });
+    } else if (action === "link") { openSync({ linking: true }); }
+    else if (action === "back") { openSync(); }
+    else if (action === "link-confirm") {
+      var inp = $("syncCodeInput");
+      var code = (inp && inp.value.trim()) || "";
+      if (!/^[A-Za-z0-9_-]{16,64}$/.test(code)) { setSyncMsg("同步碼格式不對，請確認後再貼一次。", "err"); return; }
+      setSyncMsg("連結並下載中…");
+      cloudPull(code, function (ok, data) {
+        if (ok && data) { saveSync({ code: code, updatedAt: data.updatedAt }); applyData(data.payload); window.location.reload(); }
+        else if (data === "notfound") setSyncMsg("查無此同步碼。請確認沒打錯，或先在原本的裝置啟用同步。", "err");
+        else setSyncMsg(syncErr(data), "err");
+      });
+    } else if (action === "push") {
+      setSyncMsg("上傳中…");
+      cloudPush(function (ok, info) { if (ok) setSyncMsg("已上傳！（" + fmtTime(info) + "）", "ok"); else setSyncMsg(syncErr(info), "err"); });
+    } else if (action === "pull-self") {
+      if (!s || !s.code) return;
+      if (!window.confirm("從雲端下載會覆蓋這台裝置目前的進度，確定嗎？")) return;
+      setSyncMsg("下載中…");
+      cloudPull(s.code, function (ok, data) {
+        if (ok && data) { applyData(data.payload); window.location.reload(); }
+        else if (data === "notfound") setSyncMsg("雲端還沒有資料，先按「立即上傳這台」吧。", "err");
+        else setSyncMsg(syncErr(data), "err");
+      });
+    } else if (action === "disable") {
+      if (!window.confirm("停用後這台裝置不再自動同步（雲端資料仍保留）。確定停用？")) return;
+      clearSync(); renderPath(); openSync();
+    } else if (action === "copy") {
+      if (s && s.code && navigator.clipboard) navigator.clipboard.writeText(s.code).then(function () { setSyncMsg("已複製同步碼。", "ok"); });
+    }
+  }
+
   // ---- 全站指令面板（⌘K）----
   var palette = $("palette");
   var paletteInput = $("paletteInput");
@@ -984,7 +1117,9 @@
         return;
       }
       var qo = e.target.closest("[data-quiz-opt]");
-      if (qo) quizAnswer(qo.getAttribute("data-quiz-opt"));
+      if (qo) { quizAnswer(qo.getAttribute("data-quiz-opt")); return; }
+      var sa = e.target.closest("[data-sync-action]");
+      if (sa) handleSync(sa.getAttribute("data-sync-action"));
     });
     modalBody.addEventListener("input", function (e) {
       var ta = e.target.closest("[data-note-i]");
@@ -993,6 +1128,7 @@
   }
   document.addEventListener("click", function (e) {
     if (e.target.closest("[data-quiz-start]")) { startQuiz(); return; }
+    if (e.target.closest("[data-sync]")) { openSync(); return; }
     var gs = e.target.closest("[data-goto-step]");
     if (gs) { closeModal(); scrollToStep(parseInt(gs.getAttribute("data-goto-step"), 10)); return; }
     if (e.target.closest("[data-show-plan]")) {
