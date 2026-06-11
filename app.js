@@ -52,6 +52,43 @@
   var icoCheck = '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
   var icoChain = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7.1-7.1l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7.1 7.1l1.7-1.7"/></svg>';
   var icoFlowArrow = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  var icoSearch = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>';
+  var icoNote = '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+
+  // ---- 本機儲存：進度之外的個人資料（已學會、筆記、起點測驗結果）----
+  var KNOWN_KEY = "ai-lib-known", NOTES_KEY = "ai-lib-notes", PROFILE_KEY = "ai-lib-profile";
+  function loadKnown() {
+    try { var a = JSON.parse(localStorage.getItem(KNOWN_KEY)); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+  }
+  function saveKnown(a) { try { localStorage.setItem(KNOWN_KEY, JSON.stringify(a)); } catch (e) {} }
+  function isKnown(name) { return loadKnown().indexOf(name) !== -1; }
+  function toggleKnown(name) {
+    var a = loadKnown(); var i = a.indexOf(name);
+    if (i === -1) a.push(name); else a.splice(i, 1);
+    saveKnown(a);
+  }
+  function loadNotes() {
+    try { var o = JSON.parse(localStorage.getItem(NOTES_KEY)); return o && typeof o === "object" ? o : {}; } catch (e) { return {}; }
+  }
+  function saveNote(name, text) {
+    var o = loadNotes();
+    if (text) o[name] = text; else delete o[name];
+    try { localStorage.setItem(NOTES_KEY, JSON.stringify(o)); } catch (e) {}
+  }
+  function loadProfile() {
+    try { return JSON.parse(localStorage.getItem(PROFILE_KEY)); } catch (e) { return null; }
+  }
+  function saveProfile(p) { try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch (e) {} }
+
+  function patchCard(i) {
+    var card = document.querySelector('.tool-card[data-tool="' + i + '"]');
+    if (!card) return;
+    var on = isKnown(allTools[i].name);
+    card.classList.toggle("known", on);
+    var b = card.querySelector(".known-badge");
+    if (on && !b) card.insertAdjacentHTML("afterbegin", '<span class="known-badge" title="已學會">' + icoCheck + "</span>");
+    if (!on && b) b.remove();
+  }
 
   // ---- Hero meta + footer + stats ----
   if ($("updatedPill")) $("updatedPill").textContent = "最後更新：" + D.updated;
@@ -87,12 +124,38 @@
     var prog = loadProg();
     var total = D.learningPath.length;
     var doneCount = D.learningPath.reduce(function (n, _, i) { return n + (prog[i] ? 1 : 0); }, 0);
-    var bar =
-      '<div class="path-progress">' +
-      '<div class="path-progress-head"><b>我的進度</b><span>' + doneCount + " / " + total + " 步完成</span></div>" +
-      '<div class="bar"><i style="width:' + Math.round((doneCount / total) * 100) + '%"></i></div>' +
-      "</div>";
-    $("pathContainer").innerHTML = bar + D.learningPath.map(function (p, i) {
+    var known = loadKnown();
+    var knownCount = allTools.filter(function (t) { return known.indexOf(t.name) !== -1; }).length;
+    var nextIdx = -1;
+    for (var k = 0; k < total; k++) { if (!prog[k]) { nextIdx = k; break; } }
+    var profile = loadProfile();
+
+    var dash = '<div class="path-progress">' +
+      '<div class="path-progress-head"><b>我的學習儀表板</b><span>進度只存在這台裝置</span></div>' +
+      '<div class="dash-bar"><div class="lab"><span>路徑進度</span><span>' + doneCount + " / " + total + '</span></div>' +
+      '<div class="bar"><i style="width:' + Math.round((doneCount / total) * 100) + '%"></i></div></div>' +
+      '<div class="dash-bar"><div class="lab"><span>已學會的工具</span><span>' + knownCount + " / " + toolCount + '</span></div>' +
+      '<div class="bar"><i class="green" style="width:' + Math.round((knownCount / toolCount) * 100) + '%"></i></div></div>';
+    if (nextIdx === -1) {
+      dash += '<div class="dash-next"><b>六步全部完成！</b>接著把工具一個個標成「已學會」，或重測起點挑戰更進階的目標。</div>';
+    } else {
+      var np = D.learningPath[nextIdx];
+      dash += '<div class="dash-next">下一步建議：<b>第 ' + (nextIdx + 1) + ' 步「' + esc(np.title) + '」</b>' +
+        (np.tools && np.tools.length ? "・用到：" + np.tools.map(toolChip).join("") : "") + "</div>";
+    }
+    if (profile && D.learningPath[profile.stage]) {
+      dash += '<div class="dash-profile"><b>你的目標：</b>' + esc(profile.focus) +
+        '　<b>建議起點：</b>第 ' + (profile.stage + 1) + ' 步「' + esc(D.learningPath[profile.stage].title) + '」' +
+        '<span class="dash-pace">' + esc(profile.pace) + "</span></div>";
+    }
+    dash += '<div class="dash-actions">' +
+      '<button type="button" class="mini-btn" data-quiz-start>' + (profile ? "重新測起點" : "30 秒測你的起點") + "</button>" +
+      '<button type="button" class="mini-btn" data-export>匯出進度</button>' +
+      '<button type="button" class="mini-btn" data-import-btn>匯入進度</button>' +
+      '<button type="button" class="mini-btn" data-clear>清除全部</button>' +
+      "</div></div>";
+
+    $("pathContainer").innerHTML = dash + D.learningPath.map(function (p, i) {
       var isDone = !!prog[i];
       return '<div class="path-step' + (isDone ? " is-done" : "") + '">' +
         '<div class="path-num">' + (isDone ? icoCheck : (i + 1)) + "</div>" +
@@ -140,8 +203,10 @@
   // ---- Tools (grouped, click to open detail modal) ----
   function toolCard(idx, t) {
     var hay = (t.name + " " + (t.tagline || "") + " " + (t.intro || "") + " " + (t.tags || []).join(" ")).toLowerCase();
-    return '<button class="card tool-card" type="button" data-tool="' + idx + '" ' +
+    var known = isKnown(t.name);
+    return '<button class="card tool-card' + (known ? " known" : "") + '" type="button" data-tool="' + idx + '" ' +
       'data-search="' + esc(hay) + '">' +
+      (known ? '<span class="known-badge" title="已學會">' + icoCheck + "</span>" : "") +
       '<div class="card-top"><h4>' + esc(t.name) + "</h4></div>" +
       '<p class="tool-tagline">' + esc(t.tagline || "") + "</p>" +
       '<div class="card-foot">' + tagsHtml(t.tags) +
@@ -183,7 +248,7 @@
   var modalBody = $("modalBody");
   var lastFocus = null;
 
-  function modalHtml(t) {
+  function modalHtml(t, idx) {
     var h = "";
     h += '<div class="modal-head"><h3 id="modalTitle">' + esc(t.name) + "</h3>";
     if (t.tagline) h += '<p class="modal-tagline">' + esc(t.tagline) + "</p>";
@@ -246,9 +311,16 @@
       h += t.tips.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("");
       h += "</ul></div>";
     }
+    var noteVal = loadNotes()[t.name] || "";
+    h += '<div class="modal-section"><h4>' + icoNote + "我的筆記</h4>" +
+      '<textarea class="note-area" data-note-i="' + idx + '" placeholder="寫點給自己的筆記，會自動儲存（只存在這台裝置）">' + esc(noteVal) + "</textarea></div>";
+
+    var known = isKnown(t.name);
     h += '<div class="modal-foot">';
     if (t.url) h += '<a class="btn btn-primary" href="' + esc(t.url) + '" target="_blank" rel="noopener">前往官網' + arrow + "</a>";
     if (t.docs) h += '<a class="btn btn-ghost" href="' + esc(t.docs) + '" target="_blank" rel="noopener">官方文件' + extLink + "</a>";
+    h += '<button type="button" class="btn btn-ghost known-btn' + (known ? " on" : "") + '" data-known-i="' + idx + '">' +
+      icoCheck + (known ? "已學會" : "標記已學會") + "</button>";
     h += "</div>";
     return h;
   }
@@ -267,7 +339,7 @@
   function openModal(i) {
     var t = allTools[i];
     if (!t) return;
-    showModal(modalHtml(t));
+    showModal(modalHtml(t, i));
   }
 
   // 技能詳細彈窗：為什麼重要、怎麼練成、常見誤解、推薦資源
@@ -437,6 +509,300 @@
         extLink + esc(s.label) + "</a></li>";
     }).join("");
   }
+
+  // ---- 起點測驗（30 秒找出你的起點）----
+  var QUIZ = [
+    { q: "你寫過程式嗎？", key: "exp", opts: [
+      { v: "none", t: "完全沒有", d: "一行都沒寫過也沒關係" },
+      { v: "some", t: "碰過一點", d: "改過範例、上過一點課" },
+      { v: "often", t: "蠻常寫的", d: "能自己完成小專案" },
+    ] },
+    { q: "你最想先做出什麼？", key: "goal", opts: [
+      { v: "build", t: "一個能用的小工具", d: "網頁、小 App、給自己用的東西" },
+      { v: "data", t: "會讀我資料的 AI", d: "讓 AI 回答我的筆記與文件" },
+      { v: "auto", t: "自動化流程", d: "讓 AI 自己跑完多步驟工作" },
+      { v: "visual", t: "圖像與影片", d: "做社群素材、視覺創作" },
+    ] },
+    { q: "每週大概能投入多少時間？", key: "time", opts: [
+      { v: "low", t: "2 小時內", d: "通勤、睡前擠出來的時間" },
+      { v: "mid", t: "2–5 小時", d: "週末固定一段時間" },
+      { v: "high", t: "5 小時以上", d: "正在認真衝刺" },
+    ] },
+  ];
+  var quizAnswers = {}, quizStep = 0;
+
+  function computeProfile(a) {
+    var stage = a.exp === "none" ? 0 : a.exp === "some" ? 1 : 2;
+    var tools, focus;
+    if (a.goal === "build") { tools = ["Bolt.new", "Cursor"]; focus = "做出第一個能用的小工具"; }
+    else if (a.goal === "data") { tools = ["LlamaIndex", "Claude Code"]; focus = "讓 AI 讀你的資料（RAG）"; if (a.exp === "often") stage = 4; }
+    else if (a.goal === "auto") { tools = ["CrewAI", "LangChain", "Claude Code"]; focus = "自動化多步驟流程"; if (a.exp === "often") stage = 5; }
+    else { tools = ["Midjourney v7", "Google Veo 3.1", "Pika"]; focus = "視覺創作（獨立支線）"; }
+    var pace = a.time === "low"
+      ? "每週時間少：把每一步的建議時間乘以二，穩穩走比中斷重來快。"
+      : a.time === "high"
+        ? "時間充足：前三步可以併成兩週衝完，直接進到動手做。"
+        : "每週 2–5 小時：照路徑上的建議時間走，剛剛好。";
+    return { stage: stage, tools: tools, focus: focus, pace: pace };
+  }
+
+  function quizHtml() {
+    var q = QUIZ[quizStep];
+    return '<div class="modal-head"><h3 id="modalTitle">30 秒找出你的起點</h3></div>' +
+      '<p class="modal-intro">' + esc(q.q) + "</p>" +
+      '<div class="quiz-opts">' + q.opts.map(function (o) {
+        return '<button type="button" class="quiz-opt" data-quiz-opt="' + esc(o.v) + '"><b>' + esc(o.t) + "</b><span>" + esc(o.d) + "</span></button>";
+      }).join("") + "</div>" +
+      '<div class="quiz-dots">' + QUIZ.map(function (_, i) {
+        return '<i class="' + (i <= quizStep ? "on" : "") + '"></i>';
+      }).join("") + "</div>";
+  }
+  function profileResultHtml(p) {
+    var stepTitle = D.learningPath[p.stage] ? D.learningPath[p.stage].title : "";
+    var h = '<div class="modal-head"><h3 id="modalTitle">你的學習起點</h3></div>' +
+      '<p class="modal-intro">目標：' + esc(p.focus) + "。建議從 <b>第 " + (p.stage + 1) + " 步「" + esc(stepTitle) + "」</b> 開始。</p>" +
+      '<p class="info-box"><span>節奏建議</span>' + esc(p.pace) + "</p>";
+    if (p.stage < 2) h += '<p class="info-box warn"><span>提醒</span>前面的步驟是地基，照順序走反而最快。</p>';
+    h += '<div class="modal-section"><h4>' + icoTarget + "先把這幾個工具學起來</h4>" +
+      '<div class="conn-chips">' + p.tools.map(toolChip).join("") + "</div></div>" +
+      '<div class="modal-foot">' +
+      '<button type="button" class="btn btn-primary" data-goto-step="' + p.stage + '">帶我去第 ' + (p.stage + 1) + " 步</button>" +
+      '<button type="button" class="btn btn-ghost" data-quiz-start>重新測一次</button></div>';
+    return h;
+  }
+  function startQuiz() {
+    quizAnswers = {}; quizStep = 0;
+    showModal(quizHtml());
+  }
+  function quizAnswer(v) {
+    quizAnswers[QUIZ[quizStep].key] = v;
+    quizStep++;
+    if (quizStep < QUIZ.length) {
+      modalBody.innerHTML = quizHtml();
+    } else {
+      var p = computeProfile(quizAnswers);
+      saveProfile(p);
+      renderPath();
+      modalBody.innerHTML = profileResultHtml(p);
+    }
+  }
+
+  function scrollToStep(i) {
+    var steps = document.querySelectorAll(".path-step");
+    var el = steps[i];
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("flash");
+    setTimeout(function () { el.classList.remove("flash"); }, 1700);
+  }
+
+  // ---- 匯出／匯入／清除個人資料 ----
+  function exportData() {
+    var data = {
+      site: "ai-learning-library",
+      exportedAt: new Date().toISOString(),
+      progress: loadProg(),
+      known: loadKnown(),
+      notes: loadNotes(),
+      profile: loadProfile(),
+    };
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "ai-learning-library-progress.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  }
+  var importFile = $("importFile");
+  if (importFile) {
+    importFile.addEventListener("change", function () {
+      var f = this.files && this.files[0];
+      if (!f) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        try {
+          var d = JSON.parse(reader.result);
+          if (!d || (!Array.isArray(d.progress) && !Array.isArray(d.known))) throw new Error("bad");
+          if (Array.isArray(d.progress)) localStorage.setItem(PROG_KEY, JSON.stringify(d.progress));
+          if (Array.isArray(d.known)) localStorage.setItem(KNOWN_KEY, JSON.stringify(d.known));
+          if (d.notes && typeof d.notes === "object") localStorage.setItem(NOTES_KEY, JSON.stringify(d.notes));
+          if (d.profile) localStorage.setItem(PROFILE_KEY, JSON.stringify(d.profile));
+          window.location.reload();
+        } catch (e) {
+          window.alert("匯入失敗：檔案格式不對。請選擇之前用「匯出進度」存下的 JSON 檔。");
+        }
+      };
+      reader.readAsText(f);
+      this.value = "";
+    });
+  }
+
+  // ---- 全站指令面板（⌘K）----
+  var palette = $("palette");
+  var paletteInput = $("paletteInput");
+  var paletteResults = $("paletteResults");
+  var palItems = [];
+  var palActive = 0;
+
+  function buildPalIndex() {
+    var ix = [];
+    allTools.forEach(function (t, i) {
+      ix.push({ g: "工具", title: t.name, sub: t.tagline || "", hay: (t.name + " " + (t.tagline || "") + " " + (t.tags || []).join(" ") + " " + (t.intro || "")).toLowerCase(), act: { k: "tool", i: i } });
+    });
+    D.skills.forEach(function (s, i) {
+      ix.push({ g: "技能", title: s.name, sub: s.level || "", hay: (s.name + " " + s.desc + " " + (s.why || "")).toLowerCase(), act: { k: "skill", i: i } });
+    });
+    D.learningPath.forEach(function (p, i) {
+      ix.push({ g: "學習路徑", title: "第 " + (i + 1) + " 步：" + p.title, sub: p.week || "", hay: (p.title + " " + p.action).toLowerCase(), act: { k: "step", i: i } });
+    });
+    D.resources.forEach(function (r) {
+      ix.push({ g: "課程", title: r.name, sub: r.by || "", hay: (r.name + " " + r.by + " " + r.desc + " " + (r.learn || "")).toLowerCase(), act: { k: "url", u: r.url } });
+    });
+    D.bigNews.concat(D.news).forEach(function (n) {
+      ix.push({ g: "動態", title: n.title, sub: n.date || "", hay: (n.title + " " + (n.point || n.body || "")).toLowerCase(), act: { k: "url", u: n.url } });
+    });
+    D.follows.forEach(function (f) {
+      ix.push({ g: "追蹤", title: f.name, sub: f.platform || "", hay: (f.name + " " + f.handle + " " + f.desc).toLowerCase(), act: { k: "url", u: f.url } });
+    });
+    [["學習路徑", "#path"], ["串接地圖", "#flow"], ["該學的工具", "#tools"], ["該掌握的技能", "#skills"], ["學習資源", "#resources"], ["最新動態", "#news"], ["值得追蹤", "#follows"]].forEach(function (s) {
+      ix.push({ g: "前往區塊", title: s[0], sub: "跳到該區塊", hay: s[0].toLowerCase(), act: { k: "goto", sel: s[1] } });
+    });
+    return ix;
+  }
+  var palIndex = buildPalIndex();
+  var PAL_ORDER = ["工具", "技能", "學習路徑", "課程", "動態", "追蹤", "前往區塊"];
+
+  function renderPal(q) {
+    q = (q || "").trim().toLowerCase();
+    var matches;
+    if (!q) {
+      matches = palIndex.filter(function (x) { return x.g === "前往區塊"; });
+    } else {
+      matches = palIndex.filter(function (x) { return x.title.toLowerCase().indexOf(q) !== -1 || x.hay.indexOf(q) !== -1; });
+      matches.sort(function (a, b) {
+        var at = a.title.toLowerCase().indexOf(q) !== -1 ? 0 : 1;
+        var bt = b.title.toLowerCase().indexOf(q) !== -1 ? 0 : 1;
+        return at - bt;
+      });
+    }
+    var groups = {};
+    matches.forEach(function (m) { (groups[m.g] = groups[m.g] || []).push(m); });
+    palItems = [];
+    var h = "";
+    PAL_ORDER.forEach(function (g) {
+      if (!groups[g]) return;
+      h += '<div class="pal-group">' + esc(g) + "</div>";
+      groups[g].slice(0, 6).forEach(function (m) {
+        var n = palItems.length;
+        palItems.push(m);
+        h += '<div class="pal-item' + (n === 0 ? " active" : "") + '" data-pal="' + n + '"><b>' + esc(m.title) + "</b><span>" + esc(m.sub) + "</span></div>";
+      });
+    });
+    palActive = 0;
+    paletteResults.innerHTML = h || '<div class="pal-empty">找不到「' + esc(q) + '」，換個關鍵字試試。</div>';
+  }
+  function setPalActive(n) {
+    if (!palItems.length) return;
+    palActive = (n + palItems.length) % palItems.length;
+    var nodes = paletteResults.querySelectorAll(".pal-item");
+    nodes.forEach(function (el) { el.classList.remove("active"); });
+    var act = paletteResults.querySelector('[data-pal="' + palActive + '"]');
+    if (act) { act.classList.add("active"); act.scrollIntoView({ block: "nearest" }); }
+  }
+  function execPal(n) {
+    var it = palItems[n];
+    if (!it) return;
+    closePalette();
+    var a = it.act;
+    if (a.k === "tool") openModal(a.i);
+    else if (a.k === "skill") showModal(skillModalHtml(D.skills[a.i]));
+    else if (a.k === "step") scrollToStep(a.i);
+    else if (a.k === "url") window.open(a.u, "_blank", "noopener");
+    else if (a.k === "goto") { var el = document.querySelector(a.sel); if (el) el.scrollIntoView({ behavior: "smooth" }); }
+  }
+  function openPalette() {
+    if (!palette) return;
+    closeModal();
+    palette.hidden = false;
+    document.body.classList.add("modal-open");
+    paletteInput.value = "";
+    renderPal("");
+    paletteInput.focus();
+  }
+  function closePalette() {
+    if (!palette || palette.hidden) return;
+    palette.hidden = true;
+    document.body.classList.remove("modal-open");
+  }
+  if (palette) {
+    paletteInput.addEventListener("input", function () { renderPal(this.value); });
+    paletteInput.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowDown") { e.preventDefault(); setPalActive(palActive + 1); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); setPalActive(palActive - 1); }
+      else if (e.key === "Enter") { e.preventDefault(); execPal(palActive); }
+    });
+    paletteResults.addEventListener("click", function (e) {
+      var item = e.target.closest("[data-pal]");
+      if (item) execPal(parseInt(item.getAttribute("data-pal"), 10));
+    });
+    palette.addEventListener("click", function (e) {
+      if (e.target.classList.contains("palette-overlay")) closePalette();
+    });
+  }
+  document.addEventListener("keydown", function (e) {
+    if ((e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "K")) {
+      e.preventDefault();
+      if (palette && !palette.hidden) closePalette(); else openPalette();
+      return;
+    }
+    if (e.key === "Escape" && palette && !palette.hidden) { closePalette(); return; }
+    if (e.key === "/" && palette && palette.hidden && (!modal || modal.hidden)) {
+      var tag = (e.target.tagName || "").toLowerCase();
+      if (tag !== "input" && tag !== "textarea") { e.preventDefault(); openPalette(); }
+    }
+  });
+  var searchBtn = $("searchBtn");
+  if (searchBtn) searchBtn.addEventListener("click", openPalette);
+
+  // ---- 互動委派：已學會、筆記、測驗、儀表板按鈕 ----
+  if (modalBody) {
+    modalBody.addEventListener("click", function (e) {
+      var kb = e.target.closest("[data-known-i]");
+      if (kb) {
+        var i = parseInt(kb.getAttribute("data-known-i"), 10);
+        toggleKnown(allTools[i].name);
+        var on = isKnown(allTools[i].name);
+        kb.classList.toggle("on", on);
+        kb.innerHTML = icoCheck + (on ? "已學會" : "標記已學會");
+        patchCard(i);
+        renderPath();
+        return;
+      }
+      var qo = e.target.closest("[data-quiz-opt]");
+      if (qo) quizAnswer(qo.getAttribute("data-quiz-opt"));
+    });
+    modalBody.addEventListener("input", function (e) {
+      var ta = e.target.closest("[data-note-i]");
+      if (ta) saveNote(allTools[parseInt(ta.getAttribute("data-note-i"), 10)].name, ta.value.trim());
+    });
+  }
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("[data-quiz-start]")) { startQuiz(); return; }
+    var gs = e.target.closest("[data-goto-step]");
+    if (gs) { closeModal(); scrollToStep(parseInt(gs.getAttribute("data-goto-step"), 10)); return; }
+    if (e.target.closest("[data-export]")) { exportData(); return; }
+    if (e.target.closest("[data-import-btn]")) { if (importFile) importFile.click(); return; }
+    if (e.target.closest("[data-clear]")) {
+      if (window.confirm("確定要清除所有進度、已學會標記、筆記與測驗結果嗎？此動作無法復原。")) {
+        [PROG_KEY, KNOWN_KEY, NOTES_KEY, PROFILE_KEY].forEach(function (k) {
+          try { localStorage.removeItem(k); } catch (err) {}
+        });
+        window.location.reload();
+      }
+    }
+  });
 
   // ---- Theme toggle ----
   var toggle = $("themeToggle");
