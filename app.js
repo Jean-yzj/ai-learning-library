@@ -105,6 +105,7 @@
           : "") +
         '<p class="path-goal"><span>目標</span>' + esc(p.goal) + "</p>" +
         (p.done ? '<p class="path-check"><span>過關標準</span>' + esc(p.done) + "</p>" : "") +
+        (p.pitfall ? '<p class="path-pitfall"><span>卡住時</span>' + esc(p.pitfall) + "</p>" : "") +
         '<button type="button" class="path-done-btn' + (isDone ? " on" : "") + '" data-step="' + i + '">' +
         icoCheck + (isDone ? "已完成（點一下取消）" : "做到了，標記完成") + "</button>" +
         "</div></div>";
@@ -130,6 +131,7 @@
         '<div class="flow-node">' +
         '<b class="flow-stage"><span>' + (i + 1) + "</span>" + esc(f.stage) + "</b>" +
         "<p>" + esc(f.desc) + "</p>" +
+        (f.output ? '<p class="flow-output"><span>產出</span>' + esc(f.output) + "</p>" : "") +
         '<div class="flow-tools">' + f.tools.map(toolChip).join("") + "</div></div>";
     }).join("");
     if ($("flowNote") && D.flowNote) $("flowNote").textContent = D.flowNote;
@@ -251,17 +253,41 @@
     return h;
   }
 
-  function openModal(i) {
-    var t = allTools[i];
-    if (!t || !modal || !modalBody) return;
+  function showModal(html) {
+    if (!modal || !modalBody) return;
     lastFocus = document.activeElement;
-    modalBody.innerHTML = modalHtml(t);
+    modalBody.innerHTML = html;
     modal.hidden = false;
     document.body.classList.add("modal-open");
     var dialog = modal.querySelector(".modal-dialog");
     if (dialog) dialog.scrollTop = 0;
     var close = modal.querySelector(".modal-close");
     if (close) close.focus();
+  }
+  function openModal(i) {
+    var t = allTools[i];
+    if (!t) return;
+    showModal(modalHtml(t));
+  }
+
+  // 技能詳細彈窗：為什麼重要、怎麼練成、常見誤解、推薦資源
+  function skillModalHtml(s) {
+    var h = '<div class="modal-head"><h3 id="modalTitle">' + esc(s.name) + "</h3>" +
+      '<div class="card-top" style="margin:14px 0 0"><span class="meta-chip">' + esc(s.level) + "</span></div></div>";
+    h += '<p class="modal-intro">' + esc(s.desc) + "</p>";
+    if (s.why) h += '<p class="info-box"><span>為什麼重要</span>' + esc(s.why) + "</p>";
+    if (s.pathSteps && s.pathSteps.length) {
+      h += '<div class="modal-section"><h4>' + icoSteps + "怎麼練成它</h4><ol class=\"steps\">" +
+        s.pathSteps.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ol></div>";
+    }
+    if (s.trap) h += '<p class="info-box warn"><span>常見誤解</span>' + esc(s.trap) + "</p>";
+    if (s.refs && s.refs.length) {
+      h += '<div class="modal-foot">' + s.refs.map(function (r, i) {
+        return '<a class="btn ' + (i === 0 ? "btn-primary" : "btn-ghost") + '" href="' + esc(r.url) +
+          '" target="_blank" rel="noopener">' + esc(r.label) + extLink + "</a>";
+      }).join("") + "</div>";
+    }
+    return h;
   }
   function closeModal() {
     if (!modal || modal.hidden) return;
@@ -311,28 +337,41 @@
     });
   }
 
-  // ---- Skills (with how-to-start) ----
+  // ---- Skills (點開看完整學習法) ----
   if ($("skillsContainer")) {
     $("skillsContainer").innerHTML = D.skills.map(function (s, i) {
-      return '<div class="card skill-card">' +
+      return '<button type="button" class="card skill-card" data-skill="' + i + '">' +
         '<div class="skill-head"><span class="skill-num">' + (i + 1) + "</span>" +
         "<h4>" + esc(s.name) + "</h4></div>" +
         '<div class="card-top" style="margin:0 0 8px"><span class="meta-chip">' + esc(s.level) + "</span></div>" +
         "<p>" + esc(s.desc) + "</p>" +
         (s.how ? '<p class="skill-how"><span>怎麼開始</span>' + esc(s.how) + "</p>" : "") +
-        "</div>";
+        '<div class="card-foot"><span></span><span class="go">怎麼練成它' + arrow + "</span></div>" +
+        "</button>";
     }).join("");
+    $("skillsContainer").addEventListener("click", function (e) {
+      var card = e.target.closest("[data-skill]");
+      if (card) showModal(skillModalHtml(D.skills[parseInt(card.getAttribute("data-skill"), 10)]));
+    });
   }
   if ($("skillsNote") && D.skillsNote) $("skillsNote").textContent = D.skillsNote;
 
   // ---- Resources ----
+  function resLevel(v) {
+    var chip = levelCell(v);
+    return chip.indexOf("<span") === 0 ? chip : '<span class="lvl lvl-b">' + esc(v) + "</span>";
+  }
   if ($("resourcesContainer")) {
     $("resourcesContainer").innerHTML = D.resources.map(function (r) {
       return '<a class="card" href="' + esc(r.url) + '" target="_blank" rel="noopener">' +
         '<div class="card-top"><div><h4>' + esc(r.name) + "</h4>" +
         '<div class="by">' + esc(r.by) + "</div></div>" +
         '<span class="cost-chip">' + esc(r.cost) + "</span></div>" +
+        '<div class="res-meta">' + (r.level ? resLevel(r.level) : "") +
+        (r.hours ? '<span class="hours">' + esc(r.hours) + "</span>" : "") + "</div>" +
         "<p>" + esc(r.desc) + "</p>" +
+        (r.learn ? '<p class="res-learn"><span>你會學到</span>' + esc(r.learn) + "</p>" : "") +
+        (r.tip ? '<p class="res-learn tip"><span>上手建議</span>' + esc(r.tip) + "</p>" : "") +
         '<div class="card-foot"><span></span><span class="go">前往課程' + arrow + "</span></div></a>";
     }).join("");
   }
@@ -345,6 +384,7 @@
         '<span class="news-source">' + esc(n.source) + "</span></div>" +
         "<h4>" + esc(n.title) + "</h4>" +
         "<p>" + esc(n.point) + "</p>" +
+        (n.why ? '<p class="why-line"><span>跟你有關</span>' + esc(n.why) + "</p>" : "") +
         '<div class="card-foot"><span></span><span class="go">看報導' + arrow + "</span></div></a>";
     }).join("");
   }
@@ -356,6 +396,7 @@
         '<div class="tl-head"><span class="tl-date">' + esc(n.date) + "</span>" +
         (n.tag ? '<span class="tl-tag">' + esc(n.tag) + "</span>" : "") + "</div>" +
         "<h4>" + esc(n.title) + "</h4><p>" + esc(n.body) + "</p>" +
+        (n.why ? '<p class="why-line"><span>跟你有關</span>' + esc(n.why) + "</p>" : "") +
         '<a class="go" href="' + esc(n.url) + '" target="_blank" rel="noopener">閱讀原文（' + esc(n.source) + "）" + arrow + "</a>" +
         "</div></div>";
     }).join("");
@@ -380,6 +421,7 @@
           '<div class="by">' + esc(f.handle) + "</div></div>" +
           '<span class="platform-badge platform-' + platformSlug(p) + '">' + esc(p) + "</span></div>" +
           "<p>" + esc(f.desc) + "</p>" +
+          (f.start ? '<p class="start-line"><span>從這開始</span>' + esc(f.start) + "</p>" : "") +
           '<div class="card-foot"><span></span><span class="go">前往' + arrow + "</span></div></a>";
       }).join("");
       return '<div class="follow-group"><h3 class="follow-group-title">' + esc(labels[p] || p) + "</h3>" +

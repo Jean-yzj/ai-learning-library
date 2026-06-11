@@ -8,12 +8,12 @@ window.SITE_DATA = {
 
   // 工具串接地圖：從想法到上線，每一站接什麼工具
   flow: [
-    { stage: "想清楚", desc: "跟 AI 對話，把需求講到一次就懂。", tools: ["Claude", "ChatGPT"] },
-    { stage: "先做出來", desc: "一句話生出第一版，拿到公開網址。", tools: ["Bolt.new", "Replit"] },
-    { stage: "改得動它", desc: "進編輯器看懂程式、加功能、修問題。", tools: ["Cursor", "Claude Code", "GitHub Copilot"] },
-    { stage: "接上資料", desc: "讓它讀你的筆記與文件（RAG）。", tools: ["LlamaIndex"] },
-    { stage: "自動化", desc: "多步驟流程交給代理自己跑。", tools: ["LangChain", "CrewAI"] },
-    { stage: "上線給人用", desc: "推上 GitHub，Zeabur 自動部署。", tools: ["GitHub", "Zeabur"] },
+    { stage: "想清楚", desc: "跟 AI 對話，把需求講到一次就懂。", output: "一段講得清楚的需求描述", tools: ["Claude", "ChatGPT"] },
+    { stage: "先做出來", desc: "一句話生出第一版，拿到公開網址。", output: "一個可分享的公開網址", tools: ["Bolt.new", "Replit"] },
+    { stage: "改得動它", desc: "進編輯器看懂程式、加功能、修問題。", output: "你能自己加功能的專案", tools: ["Cursor", "Claude Code", "GitHub Copilot"] },
+    { stage: "接上資料", desc: "讓它讀你的筆記與文件（RAG）。", output: "會回答你資料的問答工具", tools: ["LlamaIndex"] },
+    { stage: "自動化", desc: "多步驟流程交給代理自己跑。", output: "按一下就跑完的自動流程", tools: ["LangChain", "CrewAI"] },
+    { stage: "上線給人用", desc: "推上 GitHub，Zeabur 自動部署。", output: "別人真的能用的線上服務", tools: ["GitHub", "Zeabur"] },
   ],
   flowNote:
     "點工具名稱可直接打開教學。視覺創作（Midjourney、Veo、Runway、Pika）是獨立支線，做素材時隨時插進來用。",
@@ -28,6 +28,7 @@ window.SITE_DATA = {
         "到 claude.ai 或 chatgpt.com 註冊帳號，從今天起遇到任何問題都先丟給它：看不懂的名詞請它「用白話解釋給完全不懂的人聽」、要做的事請它幫你列步驟、寫不出來的訊息請它代筆。每天至少問五個問題，持續一到兩週。",
       goal: "習慣跟 AI 對話，學會把「我想要什麼」講清楚——這是後面所有事的基礎。",
       done: "你能把一個需求一次講清楚，AI 不用來回追問五次就給出你要的東西。",
+      pitfall: "AI 答得太籠統，多半是你問得太大——把問題切小、補上背景再問一次。",
     },
     {
       title: "用講的，做出第一個東西",
@@ -37,6 +38,7 @@ window.SITE_DATA = {
         "打開 bolt.new（瀏覽器就能用，免安裝），輸入「做一個待辦清單網頁，可以新增、勾選完成、刪除，資料存在瀏覽器裡」，看它幾分鐘內生出一個能操作的網頁，再按 Deploy 拿到公開網址。整個過程你不用寫任何一行程式。",
       goal: "親手體驗一次「從想法到上線」，建立『我也做得出來』的信心。",
       done: "你有一個可以傳給朋友、對方點開就能用的公開網址。",
+      pitfall: "生成壞掉就請它「解釋現在的錯誤並修好」；連續失敗三次就開新對話、換個說法重來。",
     },
     {
       title: "進到編輯器",
@@ -46,6 +48,7 @@ window.SITE_DATA = {
         "安裝 Cursor（或照下面的教學裝 Claude Code），打開上一步的專案，先請 AI「解釋這個專案的檔案結構」，再請它加一個小功能、改一個顏色。每次改完都實際打開來看結果。",
       goal: "開始看得懂、也改得動程式，不再只是黑盒子。",
       done: "你能自己加一個小功能，並大致說出它改了哪些檔案、為什麼。",
+      pitfall: "看不懂程式就先請 AI「幫每個檔案加中文註解」，再請它用一句話說明每個檔案的角色。",
     },
     {
       title: "學會把話問好",
@@ -55,6 +58,7 @@ window.SITE_DATA = {
         "之後每次對 AI 提需求，都套用「角色＋目標＋限制＋範例」四件套：你是誰／它扮演誰、要做出什麼、有哪些限制（技術、風格、長度）、附一個你喜歡的例子。把效果好的提示存進筆記，重複使用並持續修。",
       goal: "同一個工具，產出品質翻倍——這是最划算的一項技能。",
       done: "你有一份至少 5 條、會重複拿出來用的提示清單。",
+      pitfall: "效果差先檢查「範例」給了沒——一個好例子勝過十行形容詞。",
     },
     {
       title: "讓 AI 用你的資料",
@@ -64,6 +68,7 @@ window.SITE_DATA = {
         "照下面 LlamaIndex 的步驟，把你自己的筆記或幾份 PDF 丟進 data 資料夾，做一個「只根據你的資料回答」的問答工具，然後問它幾個只有你的文件才有答案的問題，驗證它真的在讀你的資料（這就是 RAG）。",
       goal: "做出別人沒有、只屬於你的 AI 工具。",
       done: "你的工具能正確回答一個「只有你的文件裡才有答案」的問題。",
+      pitfall: "答非所問通常是資料太雜——先拿掉無關檔案、縮小範圍，再逐步加回來。",
     },
     {
       title: "組裝更大的東西",
@@ -73,6 +78,7 @@ window.SITE_DATA = {
         "用 CrewAI 把「研究員＋寫手」兩個角色串起來，自動產出一篇短報告；或用 LangChain 幫上一步的 RAG 工具加上記憶與工具呼叫。從此你做的不是單次問答，而是會自己跑流程的代理（agent）。",
       goal: "從玩具走向真正有用、能幫你做事的產品。",
       done: "你有一個按一次就自己跑完多個步驟、產出結果的小代理。",
+      pitfall: "代理失控就加停損：步數上限、預算上限、關鍵步驟人工確認——先求穩，再求全自動。",
     },
   ],
 
@@ -1056,57 +1062,178 @@ window.SITE_DATA = {
     },
   ],
 
-  // 該掌握的技能（含怎麼開始）
+  // 該掌握的技能（點開看完整學習法）
   skills: [
     {
       name: "AI 素養（AI Literacy）",
       level: "所有人",
-      desc: "2026 年最廣泛被需要的能力：理解 AI 能做什麼、限制在哪，以及如何安全、有效地用在工作上。",
+      desc: "理解 AI 能做什麼、限制在哪，以及如何安全、有效地用在工作上——2026 年最廣泛被需要的能力。",
+      why: "各種職缺的條件都開始出現它。會用 AI 的人不會被 AI 取代，但會被「更會用 AI 的人」取代。",
       how: "先固定用一個助手（Claude 或 ChatGPT）處理日常大小事，把它當同事，用一兩週養成習慣。",
+      pathSteps: [
+        "選一個主力助手（Claude 或 ChatGPT），遇到任何問題先問它",
+        "學會分辨它何時在亂掰：要求附來源、追問「你確定嗎？」",
+        "了解基本限制：知識截止日、幻覺、隱私（別貼機密資料）",
+        "挑一件每週重複的工作，改成和 AI 協作完成",
+      ],
+      trap: "以為 AI 素養＝會下指令。核心其實是判斷力：知道什麼該信、什麼該查證、什麼不該丟給它。",
+      refs: [
+        { label: "Elements of AI（免費概念課）", url: "https://www.elementsofai.com" },
+        { label: "AI for Everyone — Andrew Ng", url: "https://www.coursera.org/learn/ai-for-everyone" },
+      ],
     },
     {
       name: "提示工程（Prompt Engineering）",
       level: "入門到進階",
-      desc: "用清楚的指令、範例與限制引導 AI 產出更好結果。相關職缺今年成長 135.8%，本質是「系統設計」而非玩弄字句。",
+      desc: "用清楚的指令、範例與限制引導 AI 產出更好結果。相關職缺今年成長 135.8%，本質是「把需求想清楚」而非玩弄字句。",
+      why: "同一個模型，好提示與壞提示的產出差距可達十倍；而且這項技能跨所有工具通用，學一次到處用。",
       how: "照「角色＋目標＋限制＋範例」四件套寫提示，把好用的存起來重複用。",
+      pathSteps: [
+        "每次提需求都套「角色＋目標＋限制＋範例」四件套",
+        "同一個問題用兩種問法各跑一次，對照差異、留下好的",
+        "建立自己的提示庫（任何筆記軟體都行），持續迭代",
+        "學會把大任務拆成多輪小指令，每輪驗收再繼續",
+      ],
+      trap: "背「神奇咒語」沒有用。提示工程的本質跟寫一封清楚的交辦信一樣：對象、目的、限制、範例。",
+      refs: [
+        { label: "Anthropic 提示工程指南", url: "https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview" },
+        { label: "OpenAI Prompting Guide", url: "https://platform.openai.com/docs/guides/prompt-engineering" },
+      ],
     },
     {
       name: "RAG 檢索強化生成",
       level: "進階",
       desc: "把 AI 接上你的文件、資料庫與知識庫，降低幻覺、提升準確度，是打造內部知識助手的關鍵技能（80% 職缺可遠端）。",
+      why: "企業最常見的 AI 需求就是「讓 AI 回答我們自己的資料」——這是接案與做內部工具的甜蜜點。",
       how: "用 LlamaIndex 把自己的幾份檔案丟進去問問題，親手做一次就懂。",
+      pathSteps: [
+        "照本站 LlamaIndex 的教學，跑通第一個文件問答工具",
+        "理解流程四步：切塊 → 向量化 → 檢索 → 生成",
+        "換不同資料、調整切塊大小，觀察答案品質怎麼變",
+        "要求回答附出處，讓結果可以被驗證",
+      ],
+      trap: "以為把檔案丟進去就會準。資料清得乾不乾淨、切塊切得合不合理，才是品質的關鍵。",
+      refs: [
+        { label: "LlamaIndex 官方文件", url: "https://docs.llamaindex.ai" },
+        { label: "LangChain RAG 教學", url: "https://python.langchain.com/docs/tutorials/rag/" },
+      ],
     },
     {
       name: "AI 代理與多代理協作",
       level: "進階",
       desc: "Gartner 預估 2026 年底 40% 企業應用將內建任務型 AI 代理（2025 年不到 5%）。多代理協調的薪資溢價最高。",
+      why: "工具會一直換，但「會設計流程、會設驗收點」的人才稀缺——這是代理時代真正值錢的能力。",
       how: "先用 Claude Code 或 Replit Agent 體驗「下個目標、它自己完成」，再用 CrewAI 自己組。",
+      pathSteps: [
+        "先當使用者：用 Claude Code 跑完一個完整任務，觀察它怎麼拆步驟",
+        "用 CrewAI 組一個兩角色小團隊（研究員＋寫手）跑通",
+        "給代理工具（查資料、讀檔案），觀察它何時開始失控",
+        "學會設停損：步數上限、預算上限、人工確認點",
+      ],
+      trap: "不是越自動越好。沒有驗收點的全自動流程，出錯起來也是全自動的。",
+      refs: [
+        { label: "Anthropic：如何打造有效的代理", url: "https://www.anthropic.com/research/building-effective-agents" },
+        { label: "CrewAI 官方文件", url: "https://docs.crewai.com" },
+      ],
     },
     {
       name: "向量資料庫（Vector Databases）",
       level: "進階",
       desc: "AI 代理與 RAG 的記憶與檢索基礎，是把知識「存進」AI 的核心元件。",
+      why: "理解它，你才知道 AI 為什麼「記得」或「忘記」、檢索為什麼準或不準——除錯 RAG 全靠這個。",
       how: "做 RAG 時自然會用到（如 Chroma、pgvector）；先理解「把文字變成可搜尋的數字」這件事。",
+      pathSteps: [
+        "先懂概念：文字會被轉成一串數字（向量），語意越近距離越近",
+        "做 RAG 時實際用一次 Chroma（免安裝、內建即用）",
+        "試試 pgvector：把向量存進你熟悉的 PostgreSQL",
+        "調整 top-k 等參數，觀察檢索結果與答案的變化",
+      ],
+      trap: "不用先學數學。把它當成「語意搜尋引擎」來用就夠了，真的需要再往下挖。",
+      refs: [
+        { label: "Chroma 官方文件", url: "https://docs.trychroma.com" },
+        { label: "pgvector（GitHub）", url: "https://github.com/pgvector/pgvector" },
+      ],
     },
     {
       name: "資料工程與 MLOps",
       level: "工程",
       desc: "把模型穩定地部署、監控與規模化的工程能力，讓 AI 從 demo 走向正式產品。",
+      why: "demo 跟產品的差距全在這裡：穩定上線、看得到成本與品質、出錯能回滾。",
       how: "等你有了會動的東西再學；先把一個小服務丟上 Zeabur 或雲端跑起來。",
+      pathSteps: [
+        "把一個小服務部署上 Zeabur（或任一雲端），讓它跑一週",
+        "加上紀錄：每次 AI 呼叫的輸入、輸出與花費",
+        "設預算警報，避免 API 帳單失控",
+        "把提示與模型設定版本化，出問題能回滾",
+      ],
+      trap: "不需要一開始就上 Kubernetes。先讓一個小東西穩定活著，比什麼架構都重要。",
+      refs: [
+        { label: "Zeabur 官方文件", url: "https://zeabur.com/docs" },
+        { label: "LangSmith（LLM 監控）", url: "https://docs.smith.langchain.com" },
+      ],
     },
   ],
   skillsNote:
     "根據 Lightcast，AI 技能平均帶來約 28% 的薪資溢價；PwC 的估計更高達 56%。",
 
-  // 學習資源
+  // 學習資源（含時數、難度、你會學到什麼）
   resources: [
-    { name: "Elements of AI", by: "赫爾辛基大學", desc: "20–30 小時、免寫程式的概念入門，建立平台中立的 AI 基礎觀念。最適合完全新手。", cost: "免費", url: "https://www.elementsofai.com" },
-    { name: "AI for Everyone", by: "Andrew Ng / DeepLearning.AI", desc: "吳恩達的經典課程，不需寫程式，聚焦 AI 的商業應用與術語，建立全局觀。", cost: "可免費旁聽", url: "https://www.coursera.org/learn/ai-for-everyone" },
-    { name: "Google 機器學習速成課程", by: "Google", desc: "用 TensorFlow 實作的機器學習入門，理論與動手練習兼具。", cost: "免費", url: "https://developers.google.com/machine-learning/crash-course" },
-    { name: "CS50's Introduction to AI", by: "Harvard", desc: "想要扎實技術底子的人最佳選擇，涵蓋超越 LLM 的 AI 基礎原理。", cost: "免費", url: "https://cs50.harvard.edu/ai/" },
-    { name: "Introduction to AI for Work", by: "DataCamp", desc: "互動式、以 AI 為核心的課程，從「AI 是什麼」到實際工作應用，全程動手練習。", cost: "免費起", url: "https://www.datacamp.com/blog/best-free-ai-courses" },
-    { name: "AI Skills Navigator", by: "Microsoft", desc: "依角色與目標推薦學習起點，貫穿 Copilot 基礎到 Azure AI Foundry 的完整訓練目錄。", cost: "免費", url: "https://aiskillsnavigator.microsoft.com" },
-    { name: "Coursera AI 課程與證書", by: "Coursera", desc: "彙整各大學與機構的 AI 課程與專業證書，可依程度與主題篩選。", cost: "旁聽免費 / 證書付費", url: "https://www.coursera.org/courses?query=artificial+intelligence" },
+    {
+      name: "Elements of AI", by: "赫爾辛基大學", cost: "免費",
+      hours: "20–30 小時", level: "入門",
+      desc: "免寫程式的概念入門，建立平台中立的 AI 基礎觀念。最適合完全新手。",
+      learn: "AI 是什麼、能與不能、機器學習的直覺、AI 對社會的影響。",
+      tip: "每天 30 分鐘，先完成第一章就算上路；全程零程式。",
+      url: "https://www.elementsofai.com",
+    },
+    {
+      name: "AI for Everyone", by: "Andrew Ng / DeepLearning.AI", cost: "可免費旁聽",
+      hours: "約 10 小時", level: "入門",
+      desc: "吳恩達的經典課程，不需寫程式，聚焦 AI 的商業應用與術語，建立全局觀。",
+      learn: "AI 專案怎麼運作、哪些事該交給 AI、怎麼在組織裡導入。",
+      tip: "選旁聽（Audit）就免費；適合一週內配速看完。",
+      url: "https://www.coursera.org/learn/ai-for-everyone",
+    },
+    {
+      name: "Google 機器學習速成課程", by: "Google", cost: "免費",
+      hours: "約 15 小時", level: "中等",
+      desc: "用 TensorFlow 實作的機器學習入門，理論與動手練習兼具。",
+      learn: "機器學習核心觀念、損失函數、過擬合、特徵工程＋實作練習。",
+      tip: "數學看不懂先跳過，把範例跑起來最重要。",
+      url: "https://developers.google.com/machine-learning/crash-course",
+    },
+    {
+      name: "CS50's Introduction to AI", by: "Harvard", cost: "免費",
+      hours: "約 7 週（每週 10+ 小時）", level: "進階",
+      desc: "想要扎實技術底子的人最佳選擇，涵蓋超越 LLM 的 AI 基礎原理。",
+      learn: "搜尋演算法、知識表示、機器學習、神經網路、語言模型底層。",
+      tip: "先完成本站學習路徑前三步再來，吸收會快很多。",
+      url: "https://cs50.harvard.edu/ai/",
+    },
+    {
+      name: "Introduction to AI for Work", by: "DataCamp", cost: "免費起",
+      hours: "2–4 小時", level: "入門",
+      desc: "互動式、以 AI 為核心的課程，從「AI 是什麼」到實際工作應用，全程動手練習。",
+      learn: "提示基礎、把 AI 用進日常工作的具體做法。",
+      tip: "最快有感的一門，適合當你的第一堂課。",
+      url: "https://www.datacamp.com/blog/best-free-ai-courses",
+    },
+    {
+      name: "AI Skills Navigator", by: "Microsoft", cost: "免費",
+      hours: "依路徑而定", level: "入門～進階",
+      desc: "依角色與目標推薦學習起點，貫穿 Copilot 基礎到 Azure AI Foundry 的完整訓練目錄。",
+      learn: "微軟生態（Copilot、Azure AI）的角色化學習路徑。",
+      tip: "照「你的角色」選一條路徑就好，不要全部都想學。",
+      url: "https://aiskillsnavigator.microsoft.com",
+    },
+    {
+      name: "Coursera AI 課程與證書", by: "Coursera", cost: "旁聽免費 / 證書付費",
+      hours: "依課程而定", level: "入門～進階",
+      desc: "彙整各大學與機構的 AI 課程與專業證書，可依程度與主題篩選。",
+      learn: "依主題挑課：生成式 AI、機器學習、提示工程都有完整專項。",
+      tip: "旁聽免費；確定要履歷加分再付證書錢。",
+      url: "https://www.coursera.org/courses?query=artificial+intelligence",
+    },
   ],
 
   // 最新動態（Claude 與平台更新，依日期由新到舊）
@@ -1117,6 +1244,7 @@ window.SITE_DATA = {
       tag: "Apple WWDC",
       body:
         "Apple 在 WWDC 2026 公布全新的多 AI Extensions 系統，Claude 首次能成為 iPhone 上的 AI 選項；Siri 也改用 Gemini 強化。iOS 27 Beta 1 已於 6/8 推出。",
+      why: "之後 iPhone 的系統 AI 可以直接換成 Claude——你在本站學的工具會更貼近日常使用。",
       url: "https://www.npr.org/2026/06/08/nx-s1-5847937/apple-wwdc-2026-siri-ai-tim-cook",
       source: "NPR",
     },
@@ -1126,6 +1254,7 @@ window.SITE_DATA = {
       tag: "Anthropic",
       body:
         "新一代旗艦模型。寫程式時放行錯誤的機率比前代低約 4 倍，會主動標示不確定處；新增「努力程度（Effort Control）」可調整思考深度；Claude Code 推出 Dynamic Workflows，能調度數百個平行子代理完成跨數十萬行程式碼的大規模遷移；Fast mode 達 2.5 倍速、成本降為前代的三分之一。定價與 4.7 相同。",
+      why: "寫程式更可靠、速度更快、成本更低——用 Claude Code 做專案的體驗直接升級。",
       url: "https://www.anthropic.com/news/claude-opus-4-8",
       source: "anthropic.com",
     },
@@ -1135,6 +1264,7 @@ window.SITE_DATA = {
       tag: "Anthropic",
       body:
         "新增 security-guidance 外掛審查程式漏洞；擴充 plugins、skills、hooks、背景工作與瀏覽器選擇等功能。Anthropic 同時將 Claude Code 速率上限加倍、提高 Opus 的 API 上限。",
+      why: "外掛與技能生態正在成形，值得每個月回官方更新頁看一次有什麼新玩法。",
       url: "https://code.claude.com/docs/en/whats-new",
       source: "code.claude.com",
     },
@@ -1144,6 +1274,7 @@ window.SITE_DATA = {
       tag: "OpenAI",
       body:
         "OpenAI 宣布將下線 Sora 的網頁與 App 影片體驗，Sora API 預計 9/24 終止。創作者正轉向 Google Veo、Runway、Kling、Pika 等替代工具。",
+      why: "提醒：別把工作流押在單一平台上。提示詞與分鏡的功夫是可以帶著走的。",
       url: "https://www.eweek.com/news/sora-alternatives-ai-video-tools-2026/",
       source: "eweek.com",
     },
@@ -1155,6 +1286,7 @@ window.SITE_DATA = {
       date: "2026-06-08",
       title: "Apple WWDC 2026：Siri 換腦、Claude 進 iPhone",
       point: "Siri 改用 Gemini，並開放多 AI Extensions，Claude 首次成為 iPhone 選項；市場對執行力仍有疑慮。",
+      why: "你的 iPhone 將能自選 AI——平常用慣哪家，系統入口就跟著你。",
       source: "NPR",
       url: "https://www.npr.org/2026/06/08/nx-s1-5847937/apple-wwdc-2026-siri-ai-tim-cook",
     },
@@ -1162,6 +1294,7 @@ window.SITE_DATA = {
       date: "2026-06-04",
       title: "ChatGPT 記憶大升級「Dreaming V3」",
       point: "OpenAI 推出原始版本以來最大的記憶升級，新的 Dreaming V3 架構開始送達 Plus 與 Pro 用戶。",
+      why: "ChatGPT 會更記得你的偏好與長期脈絡，跨對話接力做專案會順很多。",
       source: "BuildFastWithAI",
       url: "https://www.buildfastwithai.com/blogs/ai-news-today-june-5-2026",
     },
@@ -1169,6 +1302,7 @@ window.SITE_DATA = {
       date: "2026-06-08",
       title: "NVIDIA 開源 Nemotron 3 Ultra（550B）",
       point: "目前最大的 Nemotron 3 模型（550B 參數、55B 啟用），號稱美國最聰明的開放權重模型。",
+      why: "開放權重越強，未來自架模型、壓低 API 成本的選項就越多。",
       source: "BuildFastWithAI",
       url: "https://www.buildfastwithai.com/blogs/ai-news-today-june-8-2026",
     },
@@ -1176,6 +1310,7 @@ window.SITE_DATA = {
       date: "2026-06-01",
       title: "Anthropic 遞交 IPO 申請",
       point: "Anthropic 於 6/1 機密遞交 IPO；同期 SpaceX 預計 6/12 上市，AI 產業進入資本市場新階段。",
+      why: "Claude 生態的資源會更充足，工具與模型的迭代節奏值得期待。",
       source: "BuildFastWithAI",
       url: "https://www.buildfastwithai.com/blogs/ai-news-today-june-8-2026",
     },
@@ -1183,6 +1318,7 @@ window.SITE_DATA = {
       date: "2026-06",
       title: "微軟 Foundry 收錄 11,000 個模型",
       point: "Foundry 模型目錄含 Claude Opus 4.8；Gemini 3.5 Pro 與 Claude Sonnet 4.8 預計本月底前推出。",
+      why: "企業平台全面多模型化——「不綁定單一模型」的開發習慣越來越重要。",
       source: "BuildFastWithAI",
       url: "https://www.buildfastwithai.com/blogs/ai-news-today-june-8-2026",
     },
@@ -1191,22 +1327,22 @@ window.SITE_DATA = {
   // 值得追蹤的人與來源（精選整理，非即時抓取）
   follows: [
     // X
-    { name: "Andrej Karpathy", handle: "@karpathy", platform: "X", desc: "想打底、聽得懂的 LLM 觀念講解，前 OpenAI / Tesla，教育型內容一流。", url: "https://x.com/karpathy" },
-    { name: "Simon Willison", handle: "@simonw", platform: "X", desc: "最實用的 LLM 用法分享：真實提示、工具拆解、誠實的踩雷心得。", url: "https://x.com/simonw" },
-    { name: "Matt Wolfe", handle: "@mreflow", platform: "X", desc: "每天的 AI 新工具與新聞懶人包，對新手友善。", url: "https://x.com/mreflow" },
-    { name: "Logan Kilpatrick", handle: "@OfficialLoganK", platform: "X", desc: "Google AI Studio / Gemini 開發者工具的第一手消息。", url: "https://x.com/OfficialLoganK" },
-    { name: "Peter Steinberger", handle: "@steipete", platform: "X", desc: "AI 寫程式工作流、代理工程的實戰心得（OpenClaw 作者）。", url: "https://x.com/steipete" },
-    { name: "Ammaar Reshi", handle: "@ammaar", platform: "X", desc: "vibe coding 示範與設計美感，看 AI 怎麼把點子變成產品。", url: "https://x.com/ammaar" },
+    { name: "Andrej Karpathy", handle: "@karpathy", platform: "X", desc: "想打底、聽得懂的 LLM 觀念講解，前 OpenAI / Tesla，教育型內容一流。", start: "先看他的《Intro to Large Language Models》演講影片。", url: "https://x.com/karpathy" },
+    { name: "Simon Willison", handle: "@simonw", platform: "X", desc: "最實用的 LLM 用法分享：真實提示、工具拆解、誠實的踩雷心得。", start: "從他部落格的年度 LLM 回顧讀起。", url: "https://x.com/simonw" },
+    { name: "Matt Wolfe", handle: "@mreflow", platform: "X", desc: "每天的 AI 新工具與新聞懶人包，對新手友善。", start: "挑最近一支每週 AI 新聞回顧影片。", url: "https://x.com/mreflow" },
+    { name: "Logan Kilpatrick", handle: "@OfficialLoganK", platform: "X", desc: "Google AI Studio / Gemini 開發者工具的第一手消息。", start: "看他置頂的 Gemini／AI Studio 更新貼文。", url: "https://x.com/OfficialLoganK" },
+    { name: "Peter Steinberger", handle: "@steipete", platform: "X", desc: "AI 寫程式工作流、代理工程的實戰心得（OpenClaw 作者）。", start: "找他談 agentic coding 工作流的長文。", url: "https://x.com/steipete" },
+    { name: "Ammaar Reshi", handle: "@ammaar", platform: "X", desc: "vibe coding 示範與設計美感，看 AI 怎麼把點子變成產品。", start: "看他用 AI 從零做出 App 的示範影片串。", url: "https://x.com/ammaar" },
     // Threads / 中文
-    { name: "techtip_s", handle: "@techtip_s", platform: "Threads", desc: "中文的學習與工具整理，輕鬆吸收新知。", url: "https://www.threads.com/@techtip_s" },
-    { name: "AI 發生什麼事", handle: "aiwhathappen.com", platform: "中文站", desc: "繁體中文 AI 新聞站，用幾句話帶你看懂每天的大事。", url: "https://www.aiwhathappen.com" },
-    { name: "104 職場力 — AI 工具懶人包", handle: "blog.104.com.tw", platform: "中文站", desc: "繁中、持續更新的免費 vs 訂閱 AI 工具大全，貼近台灣職場。", url: "https://blog.104.com.tw/ai_tools/" },
+    { name: "techtip_s", handle: "@techtip_s", platform: "Threads", desc: "中文的學習與工具整理，輕鬆吸收新知。", start: "從置頂的工具整理貼文開始。", url: "https://www.threads.com/@techtip_s" },
+    { name: "AI 發生什麼事", handle: "aiwhathappen.com", platform: "中文站", desc: "繁體中文 AI 新聞站，用幾句話帶你看懂每天的大事。", start: "先讀今天的每日摘要那一則。", url: "https://www.aiwhathappen.com" },
+    { name: "104 職場力 — AI 工具懶人包", handle: "blog.104.com.tw", platform: "中文站", desc: "繁中、持續更新的免費 vs 訂閱 AI 工具大全，貼近台灣職場。", start: "先看「免費 AI 工具」總表那一段。", url: "https://blog.104.com.tw/ai_tools/" },
     // 電子報
-    { name: "The Rundown AI", handle: "Rowan Cheung", platform: "電子報", desc: "全球最大的獨立 AI 媒體之一，每日掌握大事與態勢。", url: "https://www.therundown.ai" },
-    { name: "TLDR AI", handle: "每日", platform: "電子報", desc: "工程師愛讀的每日精選技術新聞，內容精簡。", url: "https://tldr.tech/ai" },
-    { name: "Ahead of AI", handle: "Sebastian Raschka", platform: "電子報", desc: "最大的深度技術型電子報，適合想理解模型底層的人。", url: "https://magazine.sebastianraschka.com" },
-    { name: "The Batch", handle: "Andrew Ng / DeepLearning.AI", platform: "電子報", desc: "吳恩達團隊出品的每週深度評論，平衡技術與產業。", url: "https://www.deeplearning.ai/the-batch/" },
-    { name: "Ben's Bites", handle: "每週", platform: "電子報", desc: "founder 視角、重「動手」的 AI 新聞與工具整理。", url: "https://bensbites.com" },
+    { name: "The Rundown AI", handle: "Rowan Cheung", platform: "電子報", desc: "全球最大的獨立 AI 媒體之一，每日掌握大事與態勢。", start: "訂閱免費日報，每天只讀前三條。", url: "https://www.therundown.ai" },
+    { name: "TLDR AI", handle: "每日", platform: "電子報", desc: "工程師愛讀的每日精選技術新聞，內容精簡。", start: "訂閱後每天掃標題，挑一條深讀。", url: "https://tldr.tech/ai" },
+    { name: "Ahead of AI", handle: "Sebastian Raschka", platform: "電子報", desc: "最大的深度技術型電子報，適合想理解模型底層的人。", start: "從最新一期的研究回顧開始。", url: "https://magazine.sebastianraschka.com" },
+    { name: "The Batch", handle: "Andrew Ng / DeepLearning.AI", platform: "電子報", desc: "吳恩達團隊出品的每週深度評論，平衡技術與產業。", start: "每期先讀吳恩達的開頭信。", url: "https://www.deeplearning.ai/the-batch/" },
+    { name: "Ben's Bites", handle: "每週", platform: "電子報", desc: "founder 視角、重「動手」的 AI 新聞與工具整理。", start: "看最新一期的工具推薦區塊。", url: "https://bensbites.com" },
   ],
   followsNote:
     "這些是精選整理（非即時抓取）。點進去就能看到他們在 X / Threads 上的最新貼文。",
