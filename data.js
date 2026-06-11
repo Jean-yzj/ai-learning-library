@@ -6,43 +6,73 @@
 window.SITE_DATA = {
   updated: "2026-06-10",
 
+  // 工具串接地圖：從想法到上線，每一站接什麼工具
+  flow: [
+    { stage: "想清楚", desc: "跟 AI 對話，把需求講到一次就懂。", tools: ["Claude", "ChatGPT"] },
+    { stage: "先做出來", desc: "一句話生出第一版，拿到公開網址。", tools: ["Bolt.new", "Replit"] },
+    { stage: "改得動它", desc: "進編輯器看懂程式、加功能、修問題。", tools: ["Cursor", "Claude Code", "GitHub Copilot"] },
+    { stage: "接上資料", desc: "讓它讀你的筆記與文件（RAG）。", tools: ["LlamaIndex"] },
+    { stage: "自動化", desc: "多步驟流程交給代理自己跑。", tools: ["LangChain", "CrewAI"] },
+    { stage: "上線給人用", desc: "推上 GitHub，Zeabur 自動部署。", tools: ["GitHub", "Zeabur"] },
+  ],
+  flowNote:
+    "點工具名稱可直接打開教學。視覺創作（Midjourney、Veo、Runway、Pika）是獨立支線，做素材時隨時插進來用。",
+
   // 從零到第一個工具：給「完全不會」的人的學習路徑
   learningPath: [
     {
       title: "先動嘴，不動手",
+      week: "第 1 週",
+      tools: ["Claude", "ChatGPT"],
       action:
         "到 claude.ai 或 chatgpt.com 註冊帳號，從今天起遇到任何問題都先丟給它：看不懂的名詞請它「用白話解釋給完全不懂的人聽」、要做的事請它幫你列步驟、寫不出來的訊息請它代筆。每天至少問五個問題，持續一到兩週。",
       goal: "習慣跟 AI 對話，學會把「我想要什麼」講清楚——這是後面所有事的基礎。",
+      done: "你能把一個需求一次講清楚，AI 不用來回追問五次就給出你要的東西。",
     },
     {
       title: "用講的，做出第一個東西",
+      week: "第 1–2 週",
+      tools: ["Bolt.new"],
       action:
         "打開 bolt.new（瀏覽器就能用，免安裝），輸入「做一個待辦清單網頁，可以新增、勾選完成、刪除，資料存在瀏覽器裡」，看它幾分鐘內生出一個能操作的網頁，再按 Deploy 拿到公開網址。整個過程你不用寫任何一行程式。",
       goal: "親手體驗一次「從想法到上線」，建立『我也做得出來』的信心。",
+      done: "你有一個可以傳給朋友、對方點開就能用的公開網址。",
     },
     {
       title: "進到編輯器",
+      week: "第 2–4 週",
+      tools: ["Cursor", "Claude Code"],
       action:
         "安裝 Cursor（或照下面的教學裝 Claude Code），打開上一步的專案，先請 AI「解釋這個專案的檔案結構」，再請它加一個小功能、改一個顏色。每次改完都實際打開來看結果。",
       goal: "開始看得懂、也改得動程式，不再只是黑盒子。",
+      done: "你能自己加一個小功能，並大致說出它改了哪些檔案、為什麼。",
     },
     {
       title: "學會把話問好",
+      week: "持續練習",
+      tools: ["Claude", "ChatGPT"],
       action:
         "之後每次對 AI 提需求，都套用「角色＋目標＋限制＋範例」四件套：你是誰／它扮演誰、要做出什麼、有哪些限制（技術、風格、長度）、附一個你喜歡的例子。把效果好的提示存進筆記，重複使用並持續修。",
       goal: "同一個工具，產出品質翻倍——這是最划算的一項技能。",
+      done: "你有一份至少 5 條、會重複拿出來用的提示清單。",
     },
     {
       title: "讓 AI 用你的資料",
+      week: "第 1–2 個月",
+      tools: ["LlamaIndex"],
       action:
         "照下面 LlamaIndex 的步驟，把你自己的筆記或幾份 PDF 丟進 data 資料夾，做一個「只根據你的資料回答」的問答工具，然後問它幾個只有你的文件才有答案的問題，驗證它真的在讀你的資料（這就是 RAG）。",
       goal: "做出別人沒有、只屬於你的 AI 工具。",
+      done: "你的工具能正確回答一個「只有你的文件裡才有答案」的問題。",
     },
     {
       title: "組裝更大的東西",
+      week: "第 2–3 個月",
+      tools: ["CrewAI", "LangChain"],
       action:
         "用 CrewAI 把「研究員＋寫手」兩個角色串起來，自動產出一篇短報告；或用 LangChain 幫上一步的 RAG 工具加上記憶與工具呼叫。從此你做的不是單次問答，而是會自己跑流程的代理（agent）。",
       goal: "從玩具走向真正有用、能幫你做事的產品。",
+      done: "你有一個按一次就自己跑完多個步驟、產出結果的小代理。",
     },
   ],
 
@@ -123,6 +153,11 @@ window.SITE_DATA = {
             "先把需求講清楚（要什麼功能、給誰用）比丟一堆技術細節更有效。",
             "用 /init 讓它先讀懂整個專案；改完記得請它「跑起來看看有沒有錯」。",
           ],
+          connections: {
+            prev: ["Claude"],
+            next: ["LlamaIndex", "CrewAI"],
+            pair: ["Cursor", "GitHub＋Zeabur 部署"],
+          },
           url: "https://code.claude.com/docs/en/whats-new",
           docs: "https://code.claude.com/docs",
         },
@@ -183,6 +218,11 @@ window.SITE_DATA = {
             "學生與開源維護者通常可以免費使用，記得申請。",
             "先點選相關檔案再發問，回答會更準確。",
           ],
+          connections: {
+            prev: ["ChatGPT"],
+            next: ["Claude Code"],
+            pair: ["Cursor"],
+          },
           url: "https://github.com/features/copilot",
           docs: "https://docs.github.com/copilot",
         },
@@ -243,6 +283,11 @@ window.SITE_DATA = {
             "用 @檔名 把相關檔案帶進對話，AI 會更懂上下文。",
             "不確定時先請它「只解釋、先不要動程式」。",
           ],
+          connections: {
+            prev: ["Bolt.new"],
+            next: ["Claude Code", "LlamaIndex"],
+            pair: ["GitHub Copilot"],
+          },
           url: "https://cursor.com",
           docs: "https://docs.cursor.com",
         },
@@ -295,6 +340,11 @@ window.SITE_DATA = {
           tips: [
             "適合「整包功能」一次做完的任務；零碎小修改用一般補全更快。",
           ],
+          connections: {
+            prev: ["Bolt.new"],
+            next: ["LlamaIndex"],
+            pair: ["Cursor"],
+          },
           url: "https://windsurf.com",
           docs: "https://docs.windsurf.com",
         },
@@ -370,6 +420,11 @@ window.SITE_DATA = {
             "先跑通「一問一答」，再慢慢加上記憶、工具與檢索。",
             "想做更進階的代理流程，可往官方的 LangGraph 延伸。",
           ],
+          connections: {
+            prev: ["LlamaIndex"],
+            next: ["CrewAI"],
+            pair: ["Claude Code"],
+          },
           url: "https://www.langchain.com",
           docs: "https://python.langchain.com",
         },
@@ -424,6 +479,11 @@ window.SITE_DATA = {
             "文件越乾淨、切塊越合理，答案越準。",
             "先用少量檔案測試，再慢慢擴大資料量。",
           ],
+          connections: {
+            prev: ["Claude Code"],
+            next: ["LangChain", "CrewAI"],
+            pair: ["向量資料庫（Chroma、pgvector）"],
+          },
           url: "https://www.llamaindex.ai",
           docs: "https://docs.llamaindex.ai",
         },
@@ -478,6 +538,11 @@ window.SITE_DATA = {
             "角色與目標寫得越具體，協作品質越好。",
             "先用兩個角色跑通流程，再慢慢加人。",
           ],
+          connections: {
+            prev: ["LangChain"],
+            next: ["部署成每天自動跑的服務"],
+            pair: ["Claude Code"],
+          },
           url: "https://www.crewai.com",
           docs: "https://docs.crewai.com",
         },
@@ -551,6 +616,11 @@ window.SITE_DATA = {
             "一次改一個小地方，比一次要求很多更穩定。",
             "卡住時請它「解釋現在的錯誤並修好」。",
           ],
+          connections: {
+            prev: ["Claude"],
+            next: ["Cursor"],
+            pair: ["Replit"],
+          },
           url: "https://bolt.new",
         },
         {
@@ -608,6 +678,11 @@ window.SITE_DATA = {
             "適合邊做邊學——點開它生成的檔案，看它是怎麼寫的。",
             "先做小一點的功能跑通，再慢慢擴充。",
           ],
+          connections: {
+            prev: ["Bolt.new"],
+            next: ["Cursor"],
+            pair: ["Claude"],
+          },
           url: "https://replit.com",
           docs: "https://docs.replit.com",
         },
@@ -676,6 +751,10 @@ window.SITE_DATA = {
             "把「你的程度」和「想要的結果」講清楚，它會自動調整講法。",
             "要它「每次只給一步」很適合新手，不會被資訊量淹沒。",
           ],
+          connections: {
+            next: ["Bolt.new", "Claude Code"],
+            pair: ["ChatGPT"],
+          },
           url: "https://claude.ai",
           docs: "https://support.claude.com",
         },
@@ -729,6 +808,10 @@ window.SITE_DATA = {
           tips: [
             "追問「可以再簡單一點嗎？」或「給我一個例子」能快速校正答案深度。",
           ],
+          connections: {
+            next: ["Bolt.new"],
+            pair: ["Claude"],
+          },
           url: "https://chatgpt.com",
           docs: "https://help.openai.com",
         },
@@ -798,6 +881,11 @@ window.SITE_DATA = {
             "把「鏡頭運動、光線、情緒」寫進提示會更到位。",
             "先用短秒數測試風格，滿意再做長版。",
           ],
+          connections: {
+            prev: ["ChatGPT"],
+            next: ["剪輯軟體出片"],
+            pair: ["Midjourney v7"],
+          },
           url: "https://deepmind.google/models/veo/",
         },
         {
@@ -846,6 +934,11 @@ window.SITE_DATA = {
             code: "霓虹城市夜景，雨後地面反光，賽博龐克風格，緩慢推軌鏡頭",
           },
           tips: ["用參考圖控制風格，比純文字更穩定。"],
+          connections: {
+            prev: ["Midjourney v7"],
+            next: ["剪輯軟體出片"],
+            pair: ["Google Veo 3.1"],
+          },
           url: "https://runwayml.com",
         },
         {
@@ -899,6 +992,10 @@ window.SITE_DATA = {
             "提示用「主體＋風格＋光線＋鏡頭」結構效果最好。",
             "用 --ar 控制長寬比（例如 3:2、16:9）。",
           ],
+          connections: {
+            next: ["Runway", "Pika"],
+            pair: ["Google Veo 3.1"],
+          },
           url: "https://www.midjourney.com",
           docs: "https://docs.midjourney.com",
         },
@@ -949,6 +1046,10 @@ window.SITE_DATA = {
             code: "一杯珍珠奶茶在桌上，珍珠像在跳舞，可愛卡通風格",
           },
           tips: ["先做幾秒的短片抓感覺，再慢慢加長與加特效。"],
+          connections: {
+            prev: ["Midjourney v7"],
+            pair: ["Runway"],
+          },
           url: "https://pika.art",
         },
       ],
