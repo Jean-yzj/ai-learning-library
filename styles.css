@@ -852,6 +852,16 @@ ol.plan-steps li.done { opacity: .72; }
 .proj-prompt .code { border: none; border-radius: 0; white-space: pre-wrap; font-size: .82rem; }
 .proj-prompt .code code { white-space: pre-wrap; word-break: break-word; }
 
+/* ===== 深入：編碼代理與 Agent Skills ===== */
+.grid-agents { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); align-items: start; }
+.agent-card { padding: 22px; }
+.agent-card h4 { font-size: 1.1rem; font-weight: 800; letter-spacing: -.01em; margin-bottom: 9px; }
+.agent-body { color: var(--text-soft); font-size: .93rem; line-height: 1.75; }
+.agent-points { list-style: none; display: grid; gap: 7px; margin-top: 12px; }
+.agent-points li { position: relative; padding-left: 20px; font-size: .88rem; color: var(--text-soft); line-height: 1.6; }
+.agent-points li::before { content: ""; position: absolute; left: 4px; top: 9px; width: 6px; height: 6px; border-radius: 2px; background: var(--accent); }
+.agent-card .go { margin-top: 14px; }
+
 /* ===== 常見問題 FAQ ===== */
 .faq-list { max-width: 820px; display: grid; gap: 10px; }
 .faq-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow); overflow: hidden; }

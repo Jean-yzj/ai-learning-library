@@ -52,6 +52,7 @@
   // 工具的結構化屬性，供篩選器交叉過濾使用
   var TOOL_FACETS = {
     "Claude Code": { price: "付費", level: "中等", platform: ["終端機"] },
+    "Codex": { price: "付費", level: "進階", platform: ["終端機"] },
     "GitHub Copilot": { price: "有免費額度", level: "入門", platform: ["桌面軟體"] },
     "Cursor": { price: "有免費額度", level: "中等", platform: ["桌面軟體"] },
     "Windsurf": { price: "有免費額度", level: "中等", platform: ["桌面軟體"] },
@@ -707,8 +708,8 @@
   }
   var GLOSS_CATS = {
     "基礎概念": ["API", "Token", "LLM 大型語言模型", "模型", "提示", "提示工程", "幻覺", "上下文視窗", "模型分級（Opus／Fable／Mythos）", "機器學習", "深度學習", "神經網路", "多模態", "訓練與推論"],
-    "做東西會用到": ["API 金鑰", "終端機", "環境變數", "npm", "前端 / 後端", "部署", "Git", "GitHub／儲存庫", "套件／程式庫", "JSON", "localhost"],
-    "進階": ["RAG 檢索強化生成", "向量", "向量資料庫", "代理", "MCP", "微調", "推理 / 思考", "參數", "開源 / 開放權重", "護欄", "評測／基準", "蒸餾"],
+    "做東西會用到": ["API 金鑰", "終端機", "環境變數", "npm", "前端 / 後端", "部署", "Git", "GitHub／儲存庫", "套件／程式庫", "JSON", "localhost", "Vibe coding"],
+    "進階": ["RAG 檢索強化生成", "向量", "向量資料庫", "代理", "MCP", "微調", "推理 / 思考", "參數", "開源 / 開放權重", "護欄", "評測／基準", "蒸餾", "編碼代理", "Codex", "Agent Skills（代理技能）", "子代理"],
   };
   function termCat(term) {
     for (var c in GLOSS_CATS) { if (GLOSS_CATS[c].indexOf(term) !== -1) return c; }
@@ -802,6 +803,18 @@
       b.setAttribute("aria-expanded", String(!open));
       item.classList.toggle("open", !open);
     });
+  }
+
+  // ---- 深入：編碼代理與 Agent Skills ----
+  if ($("agentsContainer") && D.agentTopics) {
+    $("agentsContainer").innerHTML = D.agentTopics.map(function (t) {
+      return '<div class="card agent-card"><h4>' + esc(t.title) + "</h4>" +
+        '<p class="agent-body">' + esc(t.body) + "</p>" +
+        (t.points && t.points.length ? '<ul class="agent-points">' + t.points.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ul>" : "") +
+        (t.link ? '<a class="go" href="' + esc(t.link.url) + '" target="_blank" rel="noopener">' + esc(t.link.label) + arrow + "</a>" : "") +
+        "</div>";
+    }).join("");
+    if ($("agentsNote") && D.agentTopicsNote) $("agentsNote").textContent = D.agentTopicsNote;
   }
 
   // ---- 起點測驗（30 秒找出你的起點）----
@@ -1105,13 +1118,16 @@
     (D.faq || []).forEach(function (f) {
       ix.push({ g: "常見問題", title: f.q, sub: "", hay: (f.q + " " + f.a).toLowerCase(), act: { k: "goto", sel: "#faq" } });
     });
-    [["新手指南", "#guide"], ["學習路徑", "#path"], ["串接地圖", "#flow"], ["該學的工具", "#tools"], ["該掌握的技能", "#skills"], ["學習資源", "#resources"], ["練習專案", "#projects"], ["名詞速查", "#glossary"], ["常見問題", "#faq"], ["最新動態", "#news"], ["值得追蹤", "#follows"]].forEach(function (s) {
+    (D.agentTopics || []).forEach(function (t) {
+      ix.push({ g: "深入主題", title: t.title, sub: "編碼代理／Skills", hay: (t.title + " " + t.body).toLowerCase(), act: { k: "goto", sel: "#agents" } });
+    });
+    [["新手指南", "#guide"], ["學習路徑", "#path"], ["串接地圖", "#flow"], ["該學的工具", "#tools"], ["該掌握的技能", "#skills"], ["編碼代理", "#agents"], ["學習資源", "#resources"], ["練習專案", "#projects"], ["名詞速查", "#glossary"], ["常見問題", "#faq"], ["最新動態", "#news"], ["值得追蹤", "#follows"]].forEach(function (s) {
       ix.push({ g: "前往區塊", title: s[0], sub: "跳到該區塊", hay: s[0].toLowerCase(), act: { k: "goto", sel: s[1] } });
     });
     return ix;
   }
   var palIndex = buildPalIndex();
-  var PAL_ORDER = ["工具", "技能", "名詞", "練習專案", "常見問題", "學習路徑", "課程", "動態", "追蹤", "前往區塊"];
+  var PAL_ORDER = ["工具", "技能", "名詞", "練習專案", "深入主題", "常見問題", "學習路徑", "課程", "動態", "追蹤", "前往區塊"];
 
   function renderPal(q) {
     q = (q || "").trim().toLowerCase();

@@ -102,11 +102,12 @@ window.SITE_DATA = {
         cols: ["價格", "難度", "最強的點", "選它如果"],
         rows: [
           ["Claude Code", "訂閱或 API 計費", "中等", "全自動做完整個專案", "想下完指令就讓它自己跑到好"],
+          ["Codex", "訂閱或 API 計費", "進階", "OpenAI 生態的編碼代理", "想用 GPT-5.5、要附設計稿做前端"],
           ["GitHub Copilot", "有免費方案", "入門", "邊打字邊補全", "已會一點程式，想立刻加速"],
           ["Cursor", "有免費方案", "中等", "AI 原生編輯器、生態最大", "想找一套日常主力編輯器"],
           ["Windsurf", "有免費方案", "中等", "代理自動化流程", "想丟目標給 AI 整包做完"],
         ],
-        pick: "新手第一套選 Cursor；想全自動選 Claude Code；已習慣 VS Code 就先裝 Copilot 試水溫。",
+        pick: "新手第一套選 Cursor；已習慣 VS Code 就先裝 Copilot；想要全自動的終端機代理——Claude 生態選 Claude Code、OpenAI 生態選 Codex（進階玩法是兩個都裝、互相檢查）。",
       },
       items: [
         {
@@ -180,6 +181,51 @@ window.SITE_DATA = {
           },
           url: "https://code.claude.com/docs/en/whats-new",
           docs: "https://code.claude.com/docs",
+        },
+        {
+          name: "Codex",
+          fit: ["想用 OpenAI 生態的終端機編碼代理", "要貼設計稿／截圖請它照著刻前端"],
+          notFit: ["已深用 Claude 生態（用 Claude Code 更順）", "只想要編輯器內的補全（用 Copilot）"],
+          priceNote: "隨 ChatGPT Plus／Pro 訂閱或 API 用量計費，有額度。",
+          tagline: "OpenAI 的編碼代理，終端機、IDE、網頁共用同一個大腦。",
+          tags: ["程式", "代理", "進階"],
+          intro:
+            "OpenAI 的編碼代理，由 GPT-5.5 驅動。能在終端機、編輯器、網頁裡運作，自己讀檔、規劃、跑指令、修錯，還能看你貼的截圖與設計稿、用子代理平行處理、上網查資料。是 Claude Code 在 OpenAI 陣營的對手，目前每週約 400 萬開發者使用。",
+          facts: [
+            { k: "價格", v: "隨 ChatGPT 訂閱或 API 計費" },
+            { k: "平台", v: "終端機／IDE／網頁" },
+            { k: "適合", v: "想用 OpenAI 生態做完整專案的人" },
+            { k: "難度", v: "進階" },
+          ],
+          useCases: [
+            "在終端機把整個任務交給它做完",
+            "貼設計稿、截圖請它照著刻出前端",
+            "用子代理（sub-agent）平行處理大任務",
+            "跨終端機、IDE、網頁無縫接續同一個工作",
+          ],
+          pros: [
+            "GPT-5.5 代理能力強（Terminal-Bench 2.0 領先）",
+            "多介面共用同一執行核心，哪裡都能接著做",
+            "看得懂圖、能在 CLI 裡生成與編輯圖片",
+          ],
+          cons: [
+            "偏進階、介面較工程師向",
+            "需要 OpenAI 訂閱或 API 額度",
+          ],
+          connections: { prev: ["ChatGPT"], pair: ["Claude Code", "Cursor"] },
+          steps: [
+            { t: "裝好 Node.js 並安裝 Codex", d: "照 Claude Code 那步裝好 Node.js，再把右邊範例第一行貼進終端機安裝。" },
+            { t: "登入 OpenAI 帳號", d: "第一次啟動會引導你用 ChatGPT 帳號或 API 金鑰登入。" },
+            { t: "進專案資料夾啟動", d: "用 cd 進到你的專案，輸入 codex 啟動，再用中文描述你要做的事。" },
+            { t: "看它規劃、批准執行", d: "它會先列出計畫；要跑指令或改檔時會先問你，看懂再放行。" },
+          ],
+          example: { caption: "安裝並啟動", code: "npm install -g @openai/codex\ncd my-project\ncodex" },
+          tips: [
+            "可以把設計稿截圖拖進去，請它照著做前端。",
+            "想兩家都用：同一個專案讓 Claude Code 與 Codex 輪流幫忙、互相檢查程式。",
+          ],
+          url: "https://developers.openai.com/codex/cli",
+          docs: "https://developers.openai.com/codex",
         },
         {
           name: "GitHub Copilot",
@@ -1610,6 +1656,38 @@ window.SITE_DATA = {
     { q: "這些工具會不會很快就過時？", a: "工具會換，但底層能力不會：把需求講清楚（提示工程）、讓 AI 讀你的資料（RAG）、設計流程（代理）。本站把「工具」和「技能」分開就是這個原因——學會用一個 AI 編輯器，換另一個幾乎無痛。跟著動態更新、保持手感就好。" },
   ],
 
+  // 深入：AI 編碼代理與 Agent Skills（進階主題）
+  agentTopics: [
+    {
+      title: "什麼是「編碼代理」（coding agent）？",
+      body: "它不只是回答問題，而是會自己讀你的檔案、規劃步驟、執行指令、看結果再修——像一個會動手的工程師。Claude Code 和 Codex 是純終端機的編碼代理；Cursor、Windsurf 則把代理放進編輯器。你給目標，它跑流程。",
+      points: ["你負責「講清楚要什麼」與「把關」，它負責動手", "過程中會停下來問你要不要執行某個指令", "適合整包功能一次做完，不適合零碎小修"],
+    },
+    {
+      title: "Claude Code vs Codex，怎麼選？",
+      body: "兩個都是頂尖的終端機編碼代理，差別主要在生態。Claude Code 由 Claude（Opus 4.8／Fable 5）驅動、屬 Anthropic 生態；Codex 由 GPT-5.5 驅動、屬 OpenAI 生態，且終端機／IDE／網頁共用同一個執行核心。",
+      points: ["已用 Claude、重視寫程式可靠度 → Claude Code", "已用 ChatGPT、想貼設計稿做前端 → Codex", "進階玩法：兩個都裝，讓它們互相檢查彼此的程式"],
+    },
+    {
+      title: "什麼是 Agent Skills（代理技能）？",
+      body: "一個「做一次、之後自動重用」的能力包：就是一個資料夾，裡面放一份 SKILL.md（教 AI 一套流程的說明），外加選用的腳本與範本。需要時 AI 會自動載入，你不用每次重講。Anthropic 已開源 17 個官方 Skills，並把規格做成像 MCP 那樣的開放標準。",
+      points: ["能力擴充型：給 AI 它本來不會的（做 PPT／Excel、爬網頁…）", "偏好編碼型：教它照你的流程做（週報格式、合約審查…）", "在 Claude App、Claude Code、API 都能用"],
+      link: { label: "Agent Skills 官方文件", url: "https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview" },
+    },
+    {
+      title: "Plugins、Sub-agents、Hooks、MCP 是什麼？",
+      body: "這些是讓代理更強的零件。簡單記：Plugin 是把多個能力打包成一個可安裝單元；Sub-agent（子代理）讓主代理把大任務拆給多個分身平行做；Hook 在特定時機自動跑你的腳本；MCP 是讓 AI 連上外部工具與資料的開放標準。",
+      points: ["Plugin ＝ skills ＋ 子代理 ＋ 指令 ＋ hooks ＋ MCP 的整包", "Sub-agent 讓大型任務平行加速", "MCP 讓 AI 讀你的檔案、查資料庫、操作軟體"],
+    },
+    {
+      title: "新手怎麼開始碰這些？",
+      body: "別急著自己做 skill。先用 Claude Code 或 Codex 完整跑一個小任務，感受「下個目標 → 它自己做完」。接著到 skills 市集裝一個現成的（例如做投影片）體驗自動載入。等你發現自己一直在重複講同一套流程，再把它寫成自己的 SKILL.md。",
+      points: ["第一步：用代理做完一個小專案（本站「練習專案」有題目）", "第二步：裝一個現成 skill 體驗自動載入", "第三步：把你常重複的流程寫成自己的 SKILL.md"],
+      link: { label: "Claude Code 官方文件", url: "https://code.claude.com/docs" },
+    },
+  ],
+  agentTopicsNote: "這區比較進階，先把前面的工具與練習專案跑過一輪再回來看，會更有感。",
+
   // 名詞速查辭典（⌘K 可直接查；卡片可互相跳轉）
   glossary: [
     { term: "API", en: "Application Programming Interface", def: "讓兩個程式互相溝通的窗口。你寫的程式透過 AI 公司的 API「呼叫」模型、拿回結果——學會接 API，就能把 AI 裝進自己的工具裡。", see: ["API 金鑰", "Token"] },
@@ -1649,6 +1727,11 @@ window.SITE_DATA = {
     { term: "護欄", en: "Guardrails", def: "給 AI 加上的安全限制，避免它產生有害、違規或危險的內容。Fable 5 遇到高風險問題改用 Opus 回答，就是一種護欄。", see: ["代理", "幻覺"] },
     { term: "評測／基準", en: "Benchmark", def: "用標準題庫測模型能力的「考試」，讓不同模型能比較（如 SWE-Bench 測寫程式）。新聞說某模型「贏幾分」就是指這個。", see: ["模型", "模型分級（Opus／Fable／Mythos）"] },
     { term: "蒸餾", en: "Distillation", def: "用大模型「教」出一個更小、更快、更便宜的小模型，盡量保留能力。手機上的 AI 常用這招。", see: ["模型", "參數"] },
+    { term: "編碼代理", en: "Coding Agent", def: "會自己讀檔、規劃、執行指令、修錯的 AI，而不只是補全或問答。Claude Code、Codex 是代表——你給目標，它跑完整個流程。", see: ["代理", "Agent Skills（代理技能）"] },
+    { term: "Codex", en: "OpenAI Codex", def: "OpenAI 的編碼代理（由 GPT-5.5 驅動），可在終端機、IDE、網頁運作，是 Claude Code 的對手。", see: ["編碼代理", "代理"] },
+    { term: "Agent Skills（代理技能）", en: "Agent Skills", def: "一個教 AI「一套流程」的能力包：一份 SKILL.md 加選用的腳本與範本，需要時 AI 自動載入。做一次就能重複用，Anthropic 已把它開源成開放標準。", see: ["MCP", "編碼代理"] },
+    { term: "子代理", en: "Sub-agent", def: "主代理把一個大任務拆給多個「分身」同時處理，加快速度、各司其職。Claude Code 與 Codex 都支援。", see: ["代理", "編碼代理"] },
+    { term: "Vibe coding", en: "Vibe coding", def: "用自然語言描述需求、讓 AI 把程式寫出來的做法——你顧「想要什麼」，把寫程式的細節交給 AI。新手最適合的入門姿勢。", see: ["提示工程", "編碼代理"] },
   ],
 
   // 各區塊原始資料來源（皆為搜尋取得的真實連結）
