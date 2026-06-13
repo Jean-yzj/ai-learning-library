@@ -768,6 +768,22 @@ ol.plan-steps li.done { opacity: .72; }
 .plan-goal span { font-weight: 800; color: var(--accent); margin-right: 6px; }
 .plan-foot { margin-top: 18px; font-size: .82rem; color: var(--text-faint); }
 
+/* ===== 主線：先學這個就夠（Claude＋Codex）===== */
+.core-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.core-card {
+  font: inherit; text-align: left; cursor: pointer; color: inherit; -webkit-appearance: none; appearance: none;
+  display: flex; flex-direction: column; background: var(--surface);
+  border: 1px solid var(--border); border-top: 3px solid var(--accent);
+  border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.core-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+.core-card:hover .go { gap: 7px; }
+.core-badge { align-self: flex-start; font-size: .72rem; font-weight: 800; color: var(--accent); background: var(--accent-soft); padding: 4px 11px; border-radius: 999px; margin-bottom: 14px; }
+.core-card h3 { font-size: 1.4rem; font-weight: 900; letter-spacing: -.02em; margin-bottom: 4px; }
+.core-role { font-size: .92rem; font-weight: 700; color: var(--text); margin-bottom: 9px; }
+.core-why { font-size: .9rem; color: var(--text-soft); line-height: 1.7; flex: 1; margin-bottom: 16px; }
+
 /* ===== 文組生 0→1 指南 ===== */
 /* 區塊背景改用乾淨的 white／grey 交替（見各 section 的 class）；強調色保留在卡片、籤、按鈕上 */
 .guide { display: grid; gap: 14px; max-width: 860px; }
@@ -907,6 +923,7 @@ ol.plan-steps li.done { opacity: .72; }
   .fit-grid { grid-template-columns: 1fr; }
   .skillmaker { grid-template-columns: 1fr; }
   .sm-output { position: static; }
+  .core-grid { grid-template-columns: 1fr; }
   .modal { padding: 0; place-items: stretch; }
   .modal-dialog { width: 100%; max-height: 100vh; border-radius: 0; }
   .modal-body { padding: 28px 20px; }

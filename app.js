@@ -292,6 +292,23 @@
   }
   renderPlan();
 
+  // ---- 主線：先學這個就夠（Claude ＋ Codex）----
+  if ($("coreContainer") && D.coreStack) {
+    var cs = D.coreStack;
+    $("coreContainer").innerHTML = cs.items.map(function (it) {
+      var idx = toolIndexByName[it.name];
+      return '<button type="button" class="core-card"' + (idx != null ? ' data-tool-link="' + idx + '"' : "") + ">" +
+        '<span class="core-badge">' + esc(it.badge) + "</span>" +
+        "<h3>" + esc(it.name) + "</h3>" +
+        '<p class="core-role">' + esc(it.role) + "</p>" +
+        '<p class="core-why">' + esc(it.why) + "</p>" +
+        '<span class="go">看教學' + arrow + "</span></button>";
+    }).join("");
+    if ($("coreIntro")) $("coreIntro").textContent = cs.intro;
+    if ($("coreNote")) $("coreNote").textContent = cs.note;
+    if ($("coreEyebrow")) $("coreEyebrow").textContent = cs.eyebrow;
+  }
+
   // ---- 文組生 0→1 指南（怎麼用這個平台）----
   if ($("guideContainer") && D.guide) {
     $("guideContainer").innerHTML = D.guide.map(function (g, i) {
@@ -1170,7 +1187,7 @@
     (D.agentTopics || []).forEach(function (t) {
       ix.push({ g: "深入主題", title: t.title, sub: "編碼代理／Skills", hay: (t.title + " " + t.body).toLowerCase(), act: { k: "goto", sel: "#agents" } });
     });
-    [["新手指南", "#guide"], ["學習路徑", "#path"], ["串接地圖", "#flow"], ["該學的工具", "#tools"], ["該掌握的技能", "#skills"], ["編碼代理", "#agents"], ["做一個 Skill", "#skillmaker"], ["學習資源", "#resources"], ["練習專案", "#projects"], ["名詞速查", "#glossary"], ["常見問題", "#faq"], ["最新動態", "#news"], ["值得追蹤", "#follows"]].forEach(function (s) {
+    [["先學這個（Claude＋Codex）", "#core"], ["新手指南", "#guide"], ["學習路徑", "#path"], ["串接地圖", "#flow"], ["工具庫", "#tools"], ["該掌握的技能", "#skills"], ["編碼代理", "#agents"], ["做一個 Skill", "#skillmaker"], ["學習資源", "#resources"], ["練習專案", "#projects"], ["名詞速查", "#glossary"], ["常見問題", "#faq"], ["最新動態", "#news"], ["值得追蹤", "#follows"]].forEach(function (s) {
       ix.push({ g: "前往區塊", title: s[0], sub: "跳到該區塊", hay: s[0].toLowerCase(), act: { k: "goto", sel: s[1] } });
     });
     return ix;
