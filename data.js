@@ -4,7 +4,18 @@
 // 工具的 steps 支援兩種格式：純字串，或 { t: "步驟標題", d: "詳細說明" }。
 
 window.SITE_DATA = {
-  updated: "2026-06-10",
+  updated: "2026-06-13",
+
+  // 文組生 0→1：怎麼用這個平台一步步學（給完全沒基礎的人）
+  guide: [
+    { step: "先測你的起點", act: "點下方儀表板的「30 秒測你的起點」，誠實回答三題，系統會生出只屬於你的專屬課表。", use: "起點測驗" },
+    { step: "存好你的鑰匙", act: "按儀表板的「啟用雲端同步」，把同步碼存進手機備忘錄。之後換電腦、換手機，貼上它就接得回所有進度。", use: "雲端同步" },
+    { step: "先動嘴，養成習慣", act: "開 Claude 或 ChatGPT，把每天遇到的問題都丟給它問。看到不懂的詞，回這裡按 ⌘K（或 /）查「名詞速查」。", use: "名詞速查" },
+    { step: "用講的做出第一個東西", act: "照課表第一步，到 Bolt.new 用一句中文描述一個小網頁，等它生出來、按 Deploy 拿到公開網址——你不用寫任何程式。", use: "工具教學" },
+    { step: "卡住就查、學會就標記", act: "每張工具卡都有完整步驟和「卡住時」解法；學會一個就按「已學會」、寫下筆記，雲端會自動幫你存起來。", use: "工具卡＋筆記" },
+    { step: "持續加深、跟上動態", act: "每週看一次「最新動態」和「值得追蹤」；想把底層能力練紮實，就點開「技能」看它怎麼一步步練成。", use: "技能＋動態" },
+  ],
+  guideNote: "我自己也是文組出身、邊做邊學的。這 6 步是我覺得最不會卡住的順序——重點不是學完，而是先動起來。",
 
   // 工具串接地圖：從想法到上線，每一站接什麼工具
   flow: [
@@ -702,8 +713,10 @@ window.SITE_DATA = {
         rows: [
           ["Claude", "有免費方案", "入門", "長文與寫作品質", "常讀長文件、寫東西、寫程式"],
           ["ChatGPT", "有免費方案", "入門", "生態與功能最全", "要語音、深入研究等周邊功能"],
+          ["NotebookLM", "有免費方案", "入門", "只讀你給的資料、不亂掰", "整理筆記、讀文獻、做報告"],
+          ["Perplexity", "有免費方案", "入門", "答案附來源可查證", "查時事、找資料、寫報告前蒐集"],
         ],
-        pick: "兩個都開免費帳號——寫作與程式找 Claude，查資料與語音用 ChatGPT。",
+        pick: "日常問答用 Claude／ChatGPT；整理自己的文件用 NotebookLM；查資料找來源用 Perplexity。文組生做報告特別吃 NotebookLM。",
       },
       items: [
         {
@@ -820,6 +833,95 @@ window.SITE_DATA = {
           },
           url: "https://chatgpt.com",
           docs: "https://help.openai.com",
+        },
+        {
+          name: "NotebookLM",
+          tagline: "把你的筆記與 PDF 變成能問答、能摘要的個人知識庫。",
+          tags: ["研究", "RAG", "入門"],
+          intro:
+            "Google 的研究筆記工具。上傳你的 PDF、講義、筆記或網址，它只根據這些內容回答、做摘要、列重點，甚至生成「雙人 podcast」幫你用聽的複習。對文組生整理報告、讀文獻特別好用，而且完全不用寫程式——等於不用寫程式版的 RAG。",
+          facts: [
+            { k: "價格", v: "有免費方案" },
+            { k: "平台", v: "瀏覽器" },
+            { k: "適合", v: "學生、要讀大量文件與做報告的人" },
+            { k: "難度", v: "入門" },
+          ],
+          useCases: [
+            "把一堆 PDF／講義丟進去用中文問問題",
+            "自動整理重點摘要與大綱",
+            "生成雙人對談 podcast，通勤用聽的複習",
+            "找出文件裡的關鍵段落並附出處",
+          ],
+          pros: [
+            "只根據你給的資料回答，不會亂掰",
+            "免費、零安裝、中文可用",
+            "等於不用寫程式就能做 RAG",
+          ],
+          cons: [
+            "只處理你上傳的內容，不會自己上網查",
+            "檔案很多時，建議一個主題開一個 notebook",
+          ],
+          connections: { prev: ["Claude", "ChatGPT"], next: ["LlamaIndex"], pair: ["Perplexity"] },
+          steps: [
+            { t: "登入", d: "到 notebooklm.google.com 用 Google 帳號登入，免費就能用。" },
+            { t: "建立 notebook、加來源", d: "新增一個 notebook，把 PDF、Google 文件、網址或直接貼上的文字加進「來源」。先放一兩份測試。" },
+            { t: "開始問問題", d: "用中文問「這些文件的重點是什麼？」「幫我整理成報告大綱」，答案會標出來自哪份來源。" },
+            { t: "用聽的複習", d: "點 Audio Overview 生成雙人 podcast，把你的資料變成一段對談，散步通勤都能複習。" },
+          ],
+          example: {
+            caption: "丟進三份講義後這樣問",
+            code: "幫我把這三份 PDF 的共同重點整理成 5 條，每條標出它來自哪一份。",
+          },
+          tips: [
+            "來源越乾淨，摘要越準；先把雜訊（頁碼、廣告）去掉。",
+            "一個主題開一個 notebook，別把所有東西混在一起。",
+          ],
+          url: "https://notebooklm.google.com",
+          docs: "https://support.google.com/notebooklm",
+        },
+        {
+          name: "Perplexity",
+          tagline: "會附上來源的 AI 搜尋引擎，查資料不怕亂掰。",
+          tags: ["研究", "搜尋", "入門"],
+          intro:
+            "一個「會回答、也會附來源」的 AI 搜尋引擎。問它問題，它即時上網查、給你整理好的答案並列出參考連結，適合做功課、查時事，以及寫報告前的資料蒐集。",
+          facts: [
+            { k: "價格", v: "有免費方案" },
+            { k: "平台", v: "瀏覽器／手機 App" },
+            { k: "適合", v: "常查資料、寫報告的人" },
+            { k: "難度", v: "入門" },
+          ],
+          useCases: [
+            "查最新時事與資料（每條都附來源）",
+            "報告前的快速文獻蒐集",
+            "比較不同說法與觀點",
+            "追問深入，它會記得上下文",
+          ],
+          pros: [
+            "每個答案都附參考連結，可以點進去查證",
+            "即時上網，資訊比一般助手新",
+            "免費版就很好用",
+          ],
+          cons: [
+            "深入研究、進階功能要付費",
+            "仍可能誤讀來源，重要結論要點進原文確認",
+          ],
+          connections: { prev: ["ChatGPT", "Claude"], pair: ["NotebookLM"] },
+          steps: [
+            { t: "登入", d: "到 perplexity.ai 用 Google 帳號登入，免費即可開始。" },
+            { t: "用中文問問題", d: "直接打你的問題；附上背景（你要做什麼、給誰看）答案會更準。" },
+            { t: "點來源查證", d: "答案下方會列參考連結，重要結論一定點進去確認，別只看摘要。" },
+            { t: "追問縮小範圍", d: "用追問或 Focus 功能把範圍縮到你要的主題與時間。" },
+          ],
+          example: {
+            caption: "查時事的問法",
+            code: "2026 年最新的 AI 影片生成工具有哪些？各自優缺點，請附上來源。",
+          },
+          tips: [
+            "把它當「會附來源的 Google」，不是聊天玩具。",
+            "重要數字與結論，一定點進原始來源再確認一次。",
+          ],
+          url: "https://www.perplexity.ai",
         },
       ],
     },
@@ -1240,6 +1342,16 @@ window.SITE_DATA = {
   news: [
     {
       date: "2026-06-09",
+      title: "Claude Fable 5 發布：首個對大眾開放的 Mythos 級模型",
+      tag: "Anthropic",
+      body:
+        "Anthropic 推出 Fable 5，是首個對一般大眾開放的「Mythos 級」模型，能力在 Opus 4.8 之上——多數基準測試名列前茅，部分項目比 Opus 4.8 高逾 10%，程式、知識工作、視覺與科學研究尤其突出。定價每百萬 token 約 $10／$50（約 Opus 4.8 的兩倍）；遇到資安、生物等高風險問題會自動改用 Opus 4.8 回答。已上線 Claude API、Claude Code 與 AWS／Google Cloud／Microsoft Foundry。",
+      why: "現在最強的 Claude 換成 Fable 5——寫程式、讀長文、做研究都再升一級。日常用 Opus 4.8 仍然划算，遇到難題（大型專案、深度研究）再開 Fable 5。",
+      url: "https://www.anthropic.com/news/claude-fable-5-mythos-5",
+      source: "anthropic.com",
+    },
+    {
+      date: "2026-06-09",
       title: "Claude 首次成為 iPhone 選項",
       tag: "Apple WWDC",
       body:
@@ -1282,6 +1394,22 @@ window.SITE_DATA = {
 
   // 最新大新聞（本月，整理自公開報導）
   bigNews: [
+    {
+      date: "2026-06-09",
+      title: "Claude Fable 5 登場，能力超越 Opus 4.8",
+      point: "Anthropic 首個對大眾開放的 Mythos 級模型，多項基準刷新紀錄、部分比 Opus 4.8 高逾 10%；高風險問題自動降回 Opus 4.8 回答。",
+      why: "你在這裡學的 Claude 系列又更強了——重度任務（大型專案、深度研究）可以考慮用 Fable 5。",
+      source: "TechCrunch",
+      url: "https://techcrunch.com/2026/06/09/anthropics-claude-fable-5-is-a-version-of-mythos-the-public-can-access-today/",
+    },
+    {
+      date: "2026-06-12",
+      title: "開源模型接力：Kimi K2.7 Code、Google DiffusionGemma",
+      point: "Moonshot 釋出主打寫程式的開源 Kimi K2.7 Code（6/12）；Google 開源擴散式模型 DiffusionGemma 26B（6/10）。開源陣營持續逼近閉源。",
+      why: "開源越強，未來自架、壓低 API 成本的選項就越多——學會用 API 的人最受惠。",
+      source: "llm-stats",
+      url: "https://llm-stats.com/llm-updates",
+    },
     {
       date: "2026-06-08",
       title: "Apple WWDC 2026：Siri 換腦、Claude 進 iPhone",
@@ -1372,6 +1500,7 @@ window.SITE_DATA = {
     { term: "終端機", en: "Terminal", def: "用打字下指令操作電腦的視窗。Mac 內建叫「終端機」，Windows 可用 PowerShell——很多開發工具都從這裡啟動。", see: ["npm"] },
     { term: "環境變數", en: "Environment Variable", def: "存在系統裡的設定值（像 API 金鑰），讓程式去讀取，又不必把秘密寫死在程式碼裡。", see: ["API 金鑰", "終端機"] },
     { term: "npm", en: "Node Package Manager", def: "Node.js 的套件管理工具。用 npm install 一行指令，就能裝進別人寫好的程式庫。", see: ["終端機"] },
+    { term: "模型分級（Opus／Fable／Mythos）", en: "Model Tiers", def: "同一家會推出不同等級的模型：越高級越聰明、也越貴越慢。以 Claude 為例，2026 年中新增的 Mythos 級（如 Fable 5）在 Opus 4.8 之上。日常用中階就好，遇到難題再開最高階。", see: ["模型", "參數"] },
   ],
 
   // 各區塊原始資料來源（皆為搜尋取得的真實連結）
@@ -1388,5 +1517,9 @@ window.SITE_DATA = {
     { label: "36 AI Accounts to Follow on X 2026", url: "https://pasqualepillitteri.it/en/news/3633/ai-x-twitter-accounts-to-follow-2026" },
     { label: "10 Best X Accounts for LLM Updates — KDnuggets", url: "https://www.kdnuggets.com/10-best-x-twitter-accounts-to-follow-for-llm-updates" },
     { label: "Top 10 AI Newsletters 2026 — DataNorth", url: "https://datanorth.ai/blog/top-10-ai-newsletters-to-follow-in-2026" },
+    { label: "Claude Fable 5 與 Mythos 5 — Anthropic", url: "https://www.anthropic.com/news/claude-fable-5-mythos-5" },
+    { label: "Anthropic Claude Fable 5（公開 Mythos 級）— TechCrunch", url: "https://techcrunch.com/2026/06/09/anthropics-claude-fable-5-is-a-version-of-mythos-the-public-can-access-today/" },
+    { label: "AI 模型更新 June 2026 — llm-stats", url: "https://llm-stats.com/llm-updates" },
+    { label: "15 Best AI Tools for Beginners 2026 — beginnersinai", url: "https://beginnersinai.org/best-ai-tools-beginners/" },
   ],
 };

@@ -62,6 +62,8 @@
     "Replit": { price: "有免費額度", level: "中等", platform: ["瀏覽器"] },
     "Claude": { price: "有免費額度", level: "入門", platform: ["瀏覽器", "桌面軟體", "手機 App"] },
     "ChatGPT": { price: "有免費額度", level: "入門", platform: ["瀏覽器", "桌面軟體", "手機 App"] },
+    "NotebookLM": { price: "有免費額度", level: "入門", platform: ["瀏覽器"] },
+    "Perplexity": { price: "有免費額度", level: "入門", platform: ["瀏覽器", "手機 App"] },
     "Google Veo 3.1": { price: "付費", level: "中等", platform: ["瀏覽器"] },
     "Runway": { price: "有免費額度", level: "中等", platform: ["瀏覽器"] },
     "Midjourney v7": { price: "付費", level: "中等", platform: ["瀏覽器"] },
@@ -288,6 +290,18 @@
     URL.revokeObjectURL(a.href);
   }
   renderPlan();
+
+  // ---- 文組生 0→1 指南（怎麼用這個平台）----
+  if ($("guideContainer") && D.guide) {
+    $("guideContainer").innerHTML = D.guide.map(function (g, i) {
+      return '<div class="guide-step">' +
+        '<div class="guide-num">' + (i + 1) + "</div>" +
+        '<div class="guide-content"><div class="guide-head"><h4>' + esc(g.step) + "</h4>" +
+        (g.use ? '<span class="guide-use">' + esc(g.use) + "</span>" : "") + "</div>" +
+        "<p>" + esc(g.act) + "</p></div></div>";
+    }).join("");
+    if ($("guideNote") && D.guideNote) $("guideNote").textContent = D.guideNote;
+  }
 
   // ---- Flow map (工具怎麼彼此串接) ----
   if ($("flowContainer") && D.flow) {
