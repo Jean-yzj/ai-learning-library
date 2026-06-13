@@ -817,6 +817,55 @@
     if ($("agentsNote") && D.agentTopicsNote) $("agentsNote").textContent = D.agentTopicsNote;
   }
 
+  // ---- SKILL.md 產生器 ----
+  if ($("smPreview")) {
+    var SM_IDS = ["smName", "smDesc", "smTitle", "smSteps", "smRules", "smExample"];
+    var SM_DEFAULTS = {
+      smName: "weekly-update",
+      smDesc: "寫或整理每週工作週報時使用（When the user asks to write or format a weekly work update）",
+      smTitle: "週報格式",
+      smSteps: "讀取使用者提供的本週工作項目\n分成「完成／進行中／卡關」三類\n每一項用一句話寫成果，盡量帶數字\n最後加一行「下週重點」",
+      smRules: "全程用繁體中文、條列、精簡\n總長不超過 200 字",
+      smExample: "本週\n- 完成：X 功能上線，轉換率 +12%\n- 進行中：Y 改版（80%）\n下週重點：完成並上線 Y",
+    };
+    function smSlug(s) { return (s || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40); }
+    function smLines(id) { return ($(id).value || "").split("\n").map(function (s) { return s.trim(); }).filter(Boolean); }
+    function smGen() {
+      var name = smSlug($("smName").value) || "my-skill";
+      var desc = ($("smDesc").value || "").replace(/\s+/g, " ").trim();
+      var title = ($("smTitle").value || "").trim() || name;
+      var L = ["---", "name: " + name, "description: " + (desc || "（描述這個 skill 何時該被使用）"), "---", "", "# " + title];
+      if (desc) L.push("", desc);
+      var steps = smLines("smSteps");
+      if (steps.length) { L.push("", "## 步驟"); steps.forEach(function (s, i) { L.push((i + 1) + ". " + s); }); }
+      var rules = smLines("smRules");
+      if (rules.length) { L.push("", "## 注意事項"); rules.forEach(function (r) { L.push("- " + r); }); }
+      var ex = ($("smExample").value || "").trim();
+      if (ex) { L.push("", "## 範例", "", ex); }
+      $("smPreview").textContent = L.join("\n");
+      if ($("smHowto")) $("smHowto").innerHTML = "用法：下載後存成 <code>" + esc(name) + "/SKILL.md</code>，放進 Claude Code 的 skills 資料夾（或在 Claude App 設定裡上傳）；需要時它會自動載入。";
+      return name;
+    }
+    SM_IDS.forEach(function (id) { if ($(id) && !$(id).value) $(id).value = SM_DEFAULTS[id] || ""; });
+    SM_IDS.forEach(function (id) { if ($(id)) $(id).addEventListener("input", smGen); });
+    smGen();
+    if ($("smCopy")) $("smCopy").addEventListener("click", function () {
+      if (navigator.clipboard) navigator.clipboard.writeText($("smPreview").textContent).then(function () {
+        var b = $("smCopy"); b.textContent = "已複製"; setTimeout(function () { b.textContent = "複製"; }, 1500);
+      });
+    });
+    if ($("smDownload")) $("smDownload").addEventListener("click", function () {
+      var blob = new Blob([$("smPreview").textContent], { type: "text/markdown;charset=utf-8" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "SKILL.md";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+    });
+  }
+
   // ---- 起點測驗（30 秒找出你的起點）----
   var QUIZ = [
     { q: "你寫過程式嗎？", key: "exp", opts: [
@@ -1121,7 +1170,7 @@
     (D.agentTopics || []).forEach(function (t) {
       ix.push({ g: "深入主題", title: t.title, sub: "編碼代理／Skills", hay: (t.title + " " + t.body).toLowerCase(), act: { k: "goto", sel: "#agents" } });
     });
-    [["新手指南", "#guide"], ["學習路徑", "#path"], ["串接地圖", "#flow"], ["該學的工具", "#tools"], ["該掌握的技能", "#skills"], ["編碼代理", "#agents"], ["學習資源", "#resources"], ["練習專案", "#projects"], ["名詞速查", "#glossary"], ["常見問題", "#faq"], ["最新動態", "#news"], ["值得追蹤", "#follows"]].forEach(function (s) {
+    [["新手指南", "#guide"], ["學習路徑", "#path"], ["串接地圖", "#flow"], ["該學的工具", "#tools"], ["該掌握的技能", "#skills"], ["編碼代理", "#agents"], ["做一個 Skill", "#skillmaker"], ["學習資源", "#resources"], ["練習專案", "#projects"], ["名詞速查", "#glossary"], ["常見問題", "#faq"], ["最新動態", "#news"], ["值得追蹤", "#follows"]].forEach(function (s) {
       ix.push({ g: "前往區塊", title: s[0], sub: "跳到該區塊", hay: s[0].toLowerCase(), act: { k: "goto", sel: s[1] } });
     });
     return ix;

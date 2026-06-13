@@ -141,6 +141,39 @@
       <p class="note" id="agentsNote"></p>
     </section>
 
+    <section class="section section-alt" id="skillmaker">
+      <div class="section-head">
+        <h2>做一個自己的 Skill</h2>
+        <p>把你「每次都要重複交代」的流程，變成一份 SKILL.md——之後 Claude Code 或 Claude App 需要時會自動載入。填一填，右邊即時產生，複製或下載就能用。</p>
+      </div>
+      <div class="skillmaker">
+        <div class="sm-form">
+          <label class="sm-field"><span>Skill 名稱（英文、用連字號）</span>
+            <input id="smName" type="text" autocomplete="off" placeholder="weekly-update" /></label>
+          <label class="sm-field"><span>什麼時候該用它？（給 AI 判斷的描述）</span>
+            <input id="smDesc" type="text" autocomplete="off" placeholder="寫週報時使用 / When the user asks to write a weekly update" /></label>
+          <label class="sm-field"><span>標題（選填）</span>
+            <input id="smTitle" type="text" autocomplete="off" placeholder="週報格式" /></label>
+          <label class="sm-field"><span>步驟（一行一步）</span>
+            <textarea id="smSteps" rows="5" placeholder="讀取本週工作項目&#10;分成完成／進行中／卡關三類&#10;每項一句話、盡量附數字"></textarea></label>
+          <label class="sm-field"><span>注意事項（選填，一行一條）</span>
+            <textarea id="smRules" rows="2" placeholder="全程用繁體中文、條列、精簡"></textarea></label>
+          <label class="sm-field"><span>範例（選填）</span>
+            <textarea id="smExample" rows="3" placeholder="貼一個理想輸出的樣子"></textarea></label>
+        </div>
+        <div class="sm-output">
+          <div class="sm-output-head"><span>SKILL.md（即時產生）</span>
+            <div class="sm-actions">
+              <button type="button" class="mini-btn" id="smCopy">複製</button>
+              <button type="button" class="mini-btn" id="smDownload">下載</button>
+            </div>
+          </div>
+          <pre class="code"><code id="smPreview"></code></pre>
+          <p class="sm-howto" id="smHowto"></p>
+        </div>
+      </div>
+    </section>
+
     <section class="section" id="resources">
       <div class="section-head">
         <h2>學習資源</h2>
