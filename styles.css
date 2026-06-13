@@ -769,7 +769,7 @@ ol.plan-steps li.done { opacity: .72; }
 .plan-foot { margin-top: 18px; font-size: .82rem; color: var(--text-faint); }
 
 /* ===== 文組生 0→1 指南 ===== */
-.guide-section, .soft-section { background: linear-gradient(180deg, var(--accent-soft) 0%, transparent 70%); }
+/* 區塊背景改用乾淨的 white／grey 交替（見各 section 的 class）；強調色保留在卡片、籤、按鈕上 */
 .guide { display: grid; gap: 14px; max-width: 860px; }
 .guide-step {
   display: flex; gap: 16px; align-items: flex-start;
