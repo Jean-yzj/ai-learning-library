@@ -379,6 +379,7 @@
           (f.k === "難度" ? levelCell(f.v) : esc(f.v)) + "</span></div>";
       }).join("") + "</div>";
     }
+    if (t.priceNote) h += '<p class="price-note"><span>價格方案</span>' + esc(t.priceNote) + "</p>";
     if (t.useCases && t.useCases.length) {
       h += '<div class="modal-section"><h4>' + icoTarget + "它能幫你做什麼</h4><ul class=\"uc\">" +
         t.useCases.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + "</ul></div>";
@@ -394,6 +395,18 @@
           t.cons.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + "</ul></div>";
       }
       h += "</div>";
+    }
+    if ((t.fit && t.fit.length) || (t.notFit && t.notFit.length)) {
+      h += '<div class="modal-section fitblock"><h4>' + icoTarget + "什麼時候用它、什麼時候別用</h4><div class=\"fit-grid\">";
+      if (t.fit && t.fit.length) {
+        h += '<div class="fit-col yes"><h5>適合這樣用</h5><ul>' +
+          t.fit.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + "</ul></div>";
+      }
+      if (t.notFit && t.notFit.length) {
+        h += '<div class="fit-col no"><h5>這時候選別的</h5><ul>' +
+          t.notFit.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + "</ul></div>";
+      }
+      h += "</div></div>";
     }
 
     if (t.connections) {
@@ -692,10 +705,40 @@
     }
     return h;
   }
+  var GLOSS_CATS = {
+    "基礎概念": ["API", "Token", "LLM 大型語言模型", "模型", "提示", "提示工程", "幻覺", "上下文視窗", "模型分級（Opus／Fable／Mythos）", "機器學習", "深度學習", "神經網路", "多模態", "訓練與推論"],
+    "做東西會用到": ["API 金鑰", "終端機", "環境變數", "npm", "前端 / 後端", "部署", "Git", "GitHub／儲存庫", "套件／程式庫", "JSON", "localhost"],
+    "進階": ["RAG 檢索強化生成", "向量", "向量資料庫", "代理", "MCP", "微調", "推理 / 思考", "參數", "開源 / 開放權重", "護欄", "評測／基準", "蒸餾"],
+  };
+  function termCat(term) {
+    for (var c in GLOSS_CATS) { if (GLOSS_CATS[c].indexOf(term) !== -1) return c; }
+    return "其他";
+  }
+  var glossActiveCat = "全部";
+  function renderGlossCats() {
+    var box = $("glossaryCats");
+    if (!box) return;
+    box.innerHTML = ["全部"].concat(Object.keys(GLOSS_CATS)).map(function (c) {
+      return '<button type="button" class="filter-chip' + (c === glossActiveCat ? " on" : "") + '" data-gcat="' + esc(c) + '">' + esc(c) + "</button>";
+    }).join("");
+  }
+  function applyGlossaryFilter() {
+    var gs = $("glossarySearch");
+    var q = (gs && gs.value.trim().toLowerCase()) || "";
+    var shown = 0;
+    document.querySelectorAll("#glossaryContainer .term-card").forEach(function (card) {
+      var ok = (!q || card.getAttribute("data-search").indexOf(q) !== -1) &&
+        (glossActiveCat === "全部" || card.getAttribute("data-cat") === glossActiveCat);
+      card.style.display = ok ? "" : "none";
+      if (ok) shown++;
+    });
+    var nr = $("glossaryNoResult");
+    if (nr) nr.hidden = shown > 0;
+  }
   if ($("glossaryContainer")) {
     $("glossaryContainer").innerHTML = glossary.map(function (g, i) {
       var hay = (g.term + " " + (g.en || "") + " " + g.def).toLowerCase();
-      return '<button type="button" class="card term-card" data-term="' + i + '" data-search="' + esc(hay) + '">' +
+      return '<button type="button" class="card term-card" data-term="' + i + '" data-cat="' + esc(termCat(g.term)) + '" data-search="' + esc(hay) + '">' +
         '<div class="term-head"><h4>' + esc(g.term) + "</h4>" +
         (g.en ? '<span class="term-en">' + esc(g.en) + "</span>" : "") + "</div>" +
         "<p>" + esc(g.def) + "</p></button>";
@@ -704,19 +747,60 @@
       var c = e.target.closest("[data-term]");
       if (c) showModal(glossaryModalHtml(glossary[parseInt(c.getAttribute("data-term"), 10)]));
     });
+    renderGlossCats();
+    var gcats = $("glossaryCats");
+    if (gcats) gcats.addEventListener("click", function (e) {
+      var chip = e.target.closest("[data-gcat]");
+      if (!chip) return;
+      glossActiveCat = chip.getAttribute("data-gcat");
+      renderGlossCats();
+      applyGlossaryFilter();
+    });
   }
   var glossarySearch = $("glossarySearch");
-  if (glossarySearch) {
-    glossarySearch.addEventListener("input", function () {
-      var q = this.value.trim().toLowerCase();
-      var shown = 0;
-      document.querySelectorAll("#glossaryContainer .term-card").forEach(function (card) {
-        var ok = !q || card.getAttribute("data-search").indexOf(q) !== -1;
-        card.style.display = ok ? "" : "none";
-        if (ok) shown++;
+  if (glossarySearch) glossarySearch.addEventListener("input", applyGlossaryFilter);
+
+  // ---- 練習專案靈感 ----
+  if ($("projectsContainer") && D.projects) {
+    $("projectsContainer").innerHTML = D.projects.map(function (p) {
+      return '<div class="card project-card">' +
+        '<div class="proj-head"><h4>' + esc(p.name) + "</h4>" +
+        '<div class="proj-meta">' + levelCell(p.level) + (p.time ? '<span class="proj-time">' + esc(p.time) + "</span>" : "") + "</div></div>" +
+        '<p class="proj-desc">' + esc(p.desc) + "</p>" +
+        (p.tools && p.tools.length ? '<div class="proj-tools"><span>用到：</span>' + p.tools.map(toolChip).join("") + "</div>" : "") +
+        (p.learn ? '<p class="proj-learn"><span>會學到</span>' + esc(p.learn) + "</p>" : "") +
+        '<div class="proj-prompt"><div class="proj-prompt-head"><span>起手提示詞（整段複製給工具）</span>' +
+        '<button type="button" class="mini-btn" data-copy-prompt>複製</button></div>' +
+        '<pre class="code"><code>' + esc(p.prompt) + "</code></pre></div></div>";
+    }).join("");
+    if ($("projectsNote") && D.projectsNote) $("projectsNote").textContent = D.projectsNote;
+    $("projectsContainer").addEventListener("click", function (e) {
+      var cp = e.target.closest("[data-copy-prompt]");
+      if (!cp) return;
+      var code = cp.closest(".proj-prompt").querySelector("code");
+      if (code && navigator.clipboard) navigator.clipboard.writeText(code.textContent).then(function () {
+        cp.textContent = "已複製"; setTimeout(function () { cp.textContent = "複製"; }, 1500);
       });
-      var nr = $("glossaryNoResult");
-      if (nr) nr.hidden = shown > 0;
+    });
+  }
+
+  // ---- 常見問題 FAQ（手風琴）----
+  var faqChevron = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+  if ($("faqContainer") && D.faq) {
+    $("faqContainer").innerHTML = D.faq.map(function (f, i) {
+      return '<div class="faq-item"><button type="button" class="faq-q" data-faq="' + i + '" aria-expanded="false">' +
+        "<span>" + esc(f.q) + "</span>" + faqChevron + "</button>" +
+        '<div class="faq-a" hidden><p>' + esc(f.a) + "</p></div></div>";
+    }).join("");
+    $("faqContainer").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-faq]");
+      if (!b) return;
+      var item = b.parentNode;
+      var ans = item.querySelector(".faq-a");
+      var open = !ans.hidden;
+      ans.hidden = open;
+      b.setAttribute("aria-expanded", String(!open));
+      item.classList.toggle("open", !open);
     });
   }
 
@@ -1015,13 +1099,19 @@
     glossary.forEach(function (g, i) {
       ix.push({ g: "名詞", title: g.term, sub: g.en || "", hay: (g.term + " " + (g.en || "") + " " + g.def).toLowerCase(), act: { k: "term", i: i } });
     });
-    [["學習路徑", "#path"], ["串接地圖", "#flow"], ["該學的工具", "#tools"], ["該掌握的技能", "#skills"], ["學習資源", "#resources"], ["名詞速查", "#glossary"], ["最新動態", "#news"], ["值得追蹤", "#follows"]].forEach(function (s) {
+    (D.projects || []).forEach(function (p) {
+      ix.push({ g: "練習專案", title: p.name, sub: p.level || "", hay: (p.name + " " + p.desc + " " + (p.tools || []).join(" ")).toLowerCase(), act: { k: "goto", sel: "#projects" } });
+    });
+    (D.faq || []).forEach(function (f) {
+      ix.push({ g: "常見問題", title: f.q, sub: "", hay: (f.q + " " + f.a).toLowerCase(), act: { k: "goto", sel: "#faq" } });
+    });
+    [["新手指南", "#guide"], ["學習路徑", "#path"], ["串接地圖", "#flow"], ["該學的工具", "#tools"], ["該掌握的技能", "#skills"], ["學習資源", "#resources"], ["練習專案", "#projects"], ["名詞速查", "#glossary"], ["常見問題", "#faq"], ["最新動態", "#news"], ["值得追蹤", "#follows"]].forEach(function (s) {
       ix.push({ g: "前往區塊", title: s[0], sub: "跳到該區塊", hay: s[0].toLowerCase(), act: { k: "goto", sel: s[1] } });
     });
     return ix;
   }
   var palIndex = buildPalIndex();
-  var PAL_ORDER = ["工具", "技能", "名詞", "學習路徑", "課程", "動態", "追蹤", "前往區塊"];
+  var PAL_ORDER = ["工具", "技能", "名詞", "練習專案", "常見問題", "學習路徑", "課程", "動態", "追蹤", "前往區塊"];
 
   function renderPal(q) {
     q = (q || "").trim().toLowerCase();

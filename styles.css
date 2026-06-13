@@ -767,7 +767,7 @@ ol.plan-steps li.done { opacity: .72; }
 .plan-foot { margin-top: 18px; font-size: .82rem; color: var(--text-faint); }
 
 /* ===== 文組生 0→1 指南 ===== */
-.guide-section { background: linear-gradient(180deg, var(--accent-soft) 0%, transparent 70%); }
+.guide-section, .soft-section { background: linear-gradient(180deg, var(--accent-soft) 0%, transparent 70%); }
 .guide { display: grid; gap: 14px; max-width: 860px; }
 .guide-step {
   display: flex; gap: 16px; align-items: flex-start;
@@ -811,11 +811,67 @@ ol.plan-steps li.done { opacity: .72; }
 [data-theme="dark"] .sync-msg.err { color: #f87171; }
 .sync-note { margin-top: 16px; font-size: .8rem; color: var(--text-faint); line-height: 1.6; }
 
+/* ===== 工具：價格方案 + 適合/不適合（modal）===== */
+.price-note {
+  margin-top: 12px; font-size: .88rem; color: var(--text-soft);
+  background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px;
+}
+.price-note span { font-weight: 800; color: var(--accent); margin-right: 7px; }
+.fit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fit-col { border-radius: 12px; padding: 14px 16px; border: 1px solid var(--border); }
+.fit-col.yes { background: color-mix(in srgb, #16a34a 7%, var(--surface)); }
+.fit-col.no { background: color-mix(in srgb, #d97706 8%, var(--surface)); }
+.fit-col h5 { font-size: .9rem; font-weight: 800; margin-bottom: 9px; }
+.fit-col.yes h5 { color: #16a34a; }
+.fit-col.no h5 { color: #b45309; }
+[data-theme="dark"] .fit-col.yes h5 { color: #4ade80; }
+[data-theme="dark"] .fit-col.no h5 { color: #fbbf24; }
+.fit-col ul { list-style: none; display: grid; gap: 7px; }
+.fit-col li { position: relative; padding-left: 18px; font-size: .88rem; color: var(--text-soft); line-height: 1.6; }
+.fit-col li::before { position: absolute; left: 2px; top: 0; font-weight: 800; }
+.fit-col.yes li::before { content: "✓"; color: #16a34a; }
+.fit-col.no li::before { content: "✕"; color: #b45309; }
+[data-theme="dark"] .fit-col.yes li::before { color: #4ade80; }
+[data-theme="dark"] .fit-col.no li::before { color: #fbbf24; }
+
+/* ===== 練習專案 ===== */
+.grid-projects { grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); align-items: start; }
+.project-card { padding: 22px; }
+.proj-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.proj-head h4 { font-size: 1.12rem; font-weight: 800; letter-spacing: -.01em; }
+.proj-meta { display: inline-flex; align-items: center; gap: 8px; }
+.proj-time { font-size: .76rem; color: var(--text-faint); font-weight: 600; }
+.proj-desc { color: var(--text-soft); font-size: .92rem; line-height: 1.65; margin-bottom: 12px; }
+.proj-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
+.proj-tools > span { font-size: .8rem; color: var(--text-faint); font-weight: 600; }
+.proj-learn { font-size: .86rem; color: var(--text-soft); margin-bottom: 14px; }
+.proj-learn span { font-weight: 800; color: var(--accent); margin-right: 6px; }
+.proj-prompt { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.proj-prompt-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: var(--bg-alt); border-bottom: 1px solid var(--border); }
+.proj-prompt-head span { font-size: .78rem; font-weight: 700; color: var(--text-faint); }
+.proj-prompt .code { border: none; border-radius: 0; white-space: pre-wrap; font-size: .82rem; }
+.proj-prompt .code code { white-space: pre-wrap; word-break: break-word; }
+
+/* ===== 常見問題 FAQ ===== */
+.faq-list { max-width: 820px; display: grid; gap: 10px; }
+.faq-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow); overflow: hidden; }
+.faq-q {
+  width: 100%; font: inherit; text-align: left; cursor: pointer; color: var(--text);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 16px 18px; background: transparent; border: none; font-weight: 700; font-size: 1rem;
+}
+.faq-q:hover { color: var(--accent); }
+.faq-q svg { flex: none; color: var(--text-faint); transition: transform .2s ease; }
+.faq-item.open .faq-q svg { transform: rotate(180deg); color: var(--accent); }
+.faq-a { padding: 0 18px 18px; }
+.faq-a p { color: var(--text-soft); font-size: .94rem; line-height: 1.8; }
+
 /* ===== Responsive ===== */
 @media (max-width: 760px) {
   .nav-links { display: none; }
   .hero { padding: 64px 20px 56px; }
   .section { padding: 56px 20px; }
+  .fit-grid { grid-template-columns: 1fr; }
   .modal { padding: 0; place-items: stretch; }
   .modal-dialog { width: 100%; max-height: 100vh; border-radius: 0; }
   .modal-body { padding: 28px 20px; }

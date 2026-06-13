@@ -24,11 +24,11 @@
       <nav class="nav-links" aria-label="主要導覽">
         <a href="#guide">新手指南</a>
         <a href="#path">學習路徑</a>
-        <a href="#flow">串接地圖</a>
         <a href="#tools">該學的工具</a>
+        <a href="#projects">練習專案</a>
         <a href="#skills">該掌握的技能</a>
-        <a href="#resources">學習資源</a>
         <a href="#glossary">名詞速查</a>
+        <a href="#faq">常見問題</a>
         <a href="#news">最新動態</a>
         <a href="#follows">值得追蹤</a>
       </nav>
@@ -114,6 +114,15 @@
       <p class="no-result" id="toolsNoResult" hidden>找不到符合條件的工具，換個關鍵字或清除篩選試試。</p>
     </section>
 
+    <section class="section soft-section" id="projects">
+      <div class="section-head">
+        <h2>練習專案靈感</h2>
+        <p>學工具最快的方法就是拿它做一個小東西。挑一個照做——每個專案都附「起手提示詞」，整段複製給工具就能開始，做完你就真的會了。</p>
+      </div>
+      <div class="grid grid-projects" id="projectsContainer"></div>
+      <p class="note" id="projectsNote"></p>
+    </section>
+
     <section class="section section-alt" id="skills">
       <div class="section-head">
         <h2>該掌握的技能</h2>
@@ -141,6 +150,7 @@
             <input id="glossarySearch" type="search" placeholder="查名詞，例如：token、向量、RAG…" aria-label="搜尋名詞" />
           </label>
         </div>
+        <div class="filters" id="glossaryCats" aria-label="名詞分類"></div>
       </div>
       <div class="grid grid-glossary" id="glossaryContainer"></div>
       <p class="no-result" id="glossaryNoResult" hidden>查無此名詞，換個關鍵字試試。</p>
@@ -164,6 +174,14 @@
       </div>
       <div id="followsContainer"></div>
       <p class="note" id="followsNote"></p>
+    </section>
+
+    <section class="section soft-section" id="faq">
+      <div class="section-head">
+        <h2>常見問題</h2>
+        <p>學 AI 之前，新手最常擔心的那些事——這裡用真心話一次講清楚。點問題展開答案。</p>
+      </div>
+      <div class="faq-list" id="faqContainer"></div>
     </section>
 
     <section class="section" id="sources">
