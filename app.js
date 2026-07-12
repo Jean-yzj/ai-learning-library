@@ -111,6 +111,19 @@
   }
   function saveProfile(p) { try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch (e) {} schedulePush(); }
 
+  // ---- 新手教室完課進度（跨裝置同步）----
+  var LESSONS_KEY = "ai-lib-lessons";
+  function loadLessonsDone() {
+    try { var a = JSON.parse(localStorage.getItem(LESSONS_KEY)); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+  }
+  function saveLessonsDone(a) { try { localStorage.setItem(LESSONS_KEY, JSON.stringify(a)); } catch (e) {} schedulePush(); }
+  function isLessonDone(id) { return loadLessonsDone().indexOf(id) !== -1; }
+  function toggleLessonDone(id) {
+    var a = loadLessonsDone(); var i = a.indexOf(id);
+    if (i === -1) a.push(id); else a.splice(i, 1);
+    saveLessonsDone(a);
+  }
+
   function patchCard(i) {
     var card = document.querySelector('.tool-card[data-tool="' + i + '"]');
     if (!card) return;
@@ -321,6 +334,115 @@
     if ($("guideNote") && D.guideNote) $("guideNote").textContent = D.guideNote;
   }
 
+  // ---- 新手教室：手把手課程 ----
+  var lessonChevron = '<svg class="lesson-chev" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+  function renderClassroomProgress() {
+    if (!$("classroomProgress") || !D.lessons) return;
+    var ids = D.lessons.map(function (L) { return L.id; });
+    var doneCount = loadLessonsDone().filter(function (id) { return ids.indexOf(id) !== -1; }).length;
+    var total = D.lessons.length;
+    var pct = total ? Math.round(doneCount / total * 100) : 0;
+    $("classroomProgress").innerHTML =
+      '<div class="cp-bar"><div class="cp-fill" style="width:' + pct + '%"></div></div>' +
+      '<span class="cp-text">已完成 <b>' + doneCount + '</b> / ' + total + ' 課</span>';
+  }
+  function lessonStepHtml(s, si) {
+    var h = '<li class="lstep"><div class="lstep-t"><span class="lstep-n">' + (si + 1) + "</span>" + esc(s.t) + "</div>";
+    if (s.do) h += '<p class="lstep-do">' + esc(s.do) + "</p>";
+    if (s.see) h += '<p class="lstep-see"><span>你會看到</span>' + esc(s.see) + "</p>";
+    if (s.paste) h += '<div class="lstep-paste"><div class="lstep-paste-head"><span>照抄貼上</span>' +
+      '<button type="button" class="mini-btn" data-copy-lesson>複製</button></div>' +
+      '<pre class="code"><code>' + esc(s.paste) + "</code></pre></div>";
+    if (s.stuck) h += '<p class="lstep-stuck"><span>卡住時</span>' + esc(s.stuck) + "</p>";
+    return h + "</li>";
+  }
+  function renderClassroom() {
+    if (!$("lessonsContainer") || !D.lessons) return;
+    var done = loadLessonsDone();
+    $("lessonsContainer").innerHTML = D.lessons.map(function (L) {
+      var isDone = done.indexOf(L.id) !== -1;
+      var steps = L.steps.map(lessonStepHtml).join("");
+      var checks = (L.check || []).map(function (c) { return "<li>" + esc(c) + "</li>"; }).join("");
+      return '<div class="lesson' + (isDone ? " done" : "") + '" data-lesson="' + esc(L.id) + '" data-no="' + esc(L.no) + '">' +
+        '<button type="button" class="lesson-head" data-lesson-toggle aria-expanded="false">' +
+        '<span class="lesson-badge">' + (isDone ? icoCheck : "第 " + esc(L.no) + " 課") + "</span>" +
+        '<span class="lesson-hwrap"><span class="lesson-title">' + esc(L.title) + "</span>" +
+        '<span class="lesson-meta">' + esc(L.tool) + " · " + esc(L.time) + " · " + esc(L.cost) + "</span></span>" +
+        lessonChevron + "</button>" +
+        '<div class="lesson-body" hidden>' +
+        (L.goal ? '<p class="lesson-goal"><span>這課結束你會</span>' + esc(L.goal) + "</p>" : "") +
+        (L.prereq ? '<p class="lesson-prereq"><span>需要先準備</span>' + esc(L.prereq) + "</p>" : "") +
+        '<ol class="lesson-steps">' + steps + "</ol>" +
+        (checks ? '<div class="lesson-check"><span class="lesson-check-h">過關檢查</span><ul>' + checks + "</ul></div>" : "") +
+        '<div class="lesson-foot">' +
+        '<button type="button" class="btn btn-primary lesson-done-btn" data-lesson-done="' + esc(L.id) + '">' +
+        icoCheck + (isDone ? "已完成（再按取消）" : "我完成這一課了") + "</button>" +
+        (L.next ? '<p class="lesson-next"><span>接下來</span>' + esc(L.next) + "</p>" : "") +
+        "</div></div></div>";
+    }).join("");
+    if ($("lessonsNote") && D.lessonsNote) $("lessonsNote").textContent = D.lessonsNote;
+    renderClassroomProgress();
+  }
+  renderClassroom();
+  if ($("lessonsContainer")) {
+    $("lessonsContainer").addEventListener("click", function (e) {
+      var toggle = e.target.closest("[data-lesson-toggle]");
+      if (toggle) {
+        var lesson = toggle.closest(".lesson");
+        var body = lesson.querySelector(".lesson-body");
+        var open = !body.hidden;
+        body.hidden = open;
+        toggle.setAttribute("aria-expanded", String(!open));
+        lesson.classList.toggle("open", !open);
+        return;
+      }
+      var copy = e.target.closest("[data-copy-lesson]");
+      if (copy) {
+        var code = copy.closest(".lstep-paste").querySelector("code");
+        if (code && navigator.clipboard) navigator.clipboard.writeText(code.textContent).then(function () {
+          copy.textContent = "已複製"; setTimeout(function () { copy.textContent = "複製"; }, 1500);
+        });
+        return;
+      }
+      var doneBtn = e.target.closest("[data-lesson-done]");
+      if (doneBtn) {
+        var id = doneBtn.getAttribute("data-lesson-done");
+        toggleLessonDone(id);
+        var nowDone = isLessonDone(id);
+        var lz = doneBtn.closest(".lesson");
+        lz.classList.toggle("done", nowDone);
+        doneBtn.innerHTML = icoCheck + (nowDone ? "已完成（再按取消）" : "我完成這一課了");
+        var badge = lz.querySelector(".lesson-badge");
+        if (badge) badge.innerHTML = nowDone ? icoCheck : "第 " + lz.getAttribute("data-no") + " 課";
+        renderClassroomProgress();
+      }
+    });
+  }
+
+  // ---- 參考庫收合（新手只看到教室，其餘要展開才出現）----
+  var libZone = $("libraryZone"), libToggle = $("libraryToggle");
+  function revealLibrary() {
+    if (!libZone || !libZone.hidden) return;
+    libZone.hidden = false;
+    if (libToggle) { libToggle.setAttribute("aria-expanded", "true"); libToggle.textContent = "收合參考庫"; }
+  }
+  function collapseLibrary() {
+    if (!libZone) return;
+    libZone.hidden = true;
+    if (libToggle) { libToggle.setAttribute("aria-expanded", "false"); libToggle.textContent = "展開參考庫"; }
+  }
+  function revealLibraryFor(el) { if (el && libZone && libZone.contains(el)) revealLibrary(); }
+  if (libToggle) libToggle.addEventListener("click", function () { libZone.hidden ? revealLibrary() : collapseLibrary(); });
+  // 點到指向參考庫內錨點（或閘門本身）的連結 → 在瀏覽器跳轉前先展開
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    var id = a.getAttribute("href").slice(1);
+    if (!id) return;
+    if (id === "libraryGate") { revealLibrary(); return; }
+    revealLibraryFor(document.getElementById(id));
+  }, true);
+
   // ---- Flow map (工具怎麼彼此串接) ----
   if ($("flowContainer") && D.flow) {
     $("flowContainer").innerHTML = D.flow.map(function (f, i) {
@@ -390,6 +512,8 @@
     if (t.tagline) h += '<p class="modal-tagline">' + esc(t.tagline) + "</p>";
     h += tagsHtml(t.tags) + "</div>";
     if (t.intro) h += '<p class="modal-intro">' + esc(t.intro) + "</p>";
+    if (t.plain) h += '<div class="term-block"><span class="term-lbl">白話講</span><p>' + esc(t.plain) + "</p></div>";
+    if (t.analogy) h += '<div class="term-block term-analogy"><span class="term-lbl">打個比方</span><p>' + esc(t.analogy) + "</p></div>";
 
     if (t.facts && t.facts.length) {
       h += '<div class="facts">' + t.facts.map(function (f) {
@@ -643,6 +767,25 @@
   }
 
   // ---- Big news (本月大新聞) ----
+  // ---- 爬蟲抓取的最新動態（由 crawl-news.js 產生 data/news-feed.js）----
+  if ($("crawledNewsContainer")) {
+    var cnews = D.crawledNews || [];
+    if (cnews.length) {
+      $("crawledNewsContainer").innerHTML = cnews.map(function (n) {
+        return '<a class="card news-card" href="' + esc(n.url) + '" target="_blank" rel="noopener">' +
+          '<div class="news-card-head"><span class="news-date">' + esc(n.date || "") + "</span>" +
+          (n.cat ? '<span class="news-cat">' + esc(n.cat) + "</span>" : "") +
+          '<span class="news-source">' + esc(n.source || "") + "</span></div>" +
+          "<h4>" + esc(n.title) + "</h4>" +
+          (n.why ? '<p class="why-line"><span>跟你有關</span>' + esc(n.why) + "</p>" : "") +
+          '<div class="card-foot"><span></span><span class="go">看原文' + arrow + "</span></div></a>";
+      }).join("");
+      if ($("crawledNewsAt") && D.crawledNewsAt) $("crawledNewsAt").textContent = "· " + esc(D.crawledNewsAt) + " 更新";
+    } else if ($("crawledNewsEmpty")) {
+      $("crawledNewsEmpty").hidden = false;
+    }
+  }
+
   if ($("bigNewsContainer")) {
     $("bigNewsContainer").innerHTML = D.bigNews.map(function (n) {
       return '<a class="card news-card" href="' + esc(n.url) + '" target="_blank" rel="noopener">' +
@@ -673,8 +816,8 @@
     return { "X": "x", "Threads": "threads", "中文站": "zh", "電子報": "news" }[p] || "other";
   }
   if ($("followsContainer")) {
-    var order = ["X", "Threads", "中文站", "電子報"];
-    var labels = { "X": "X（Twitter）", "Threads": "Threads", "中文站": "中文網站", "電子報": "電子報" };
+    var order = ["YouTube", "X", "Threads", "中文站", "電子報"];
+    var labels = { "YouTube": "YouTube 頻道", "X": "X（Twitter）", "Threads": "Threads", "中文站": "中文網站", "電子報": "電子報" };
     var groups = {};
     D.follows.forEach(function (f) {
       (groups[f.platform] = groups[f.platform] || []).push(f);
@@ -717,6 +860,9 @@
     var h = '<div class="modal-head"><h3 id="modalTitle">' + esc(g.term) + "</h3>" +
       (g.en ? '<p class="modal-tagline">' + esc(g.en) + "</p>" : "") + "</div>" +
       '<p class="modal-intro">' + esc(g.def) + "</p>";
+    if (g.plain) h += '<div class="term-block"><span class="term-lbl">白話講</span><p>' + esc(g.plain) + "</p></div>";
+    if (g.analogy) h += '<div class="term-block term-analogy"><span class="term-lbl">打個比方</span><p>' + esc(g.analogy) + "</p></div>";
+    if (g.seen) h += '<div class="term-block term-seen"><span class="term-lbl">你會在哪遇到</span><p>' + esc(g.seen) + "</p></div>";
     if (g.see && g.see.length) {
       h += '<div class="modal-section"><h4>' + icoChain + "相關名詞</h4>" +
         '<div class="conn-chips">' + g.see.map(termChip).join("") + "</div></div>";
@@ -866,6 +1012,26 @@
     SM_IDS.forEach(function (id) { if ($(id) && !$(id).value) $(id).value = SM_DEFAULTS[id] || ""; });
     SM_IDS.forEach(function (id) { if ($(id)) $(id).addEventListener("input", smGen); });
     smGen();
+    if ($("smPresets") && D.skillPresets) {
+      $("smPresets").innerHTML = D.skillPresets.map(function (p, i) {
+        return '<button type="button" class="sm-preset" data-preset="' + i + '"><b>' + esc(p.label) + '</b><span>' + esc(p.what) + '</span></button>';
+      }).join("");
+      $("smPresets").addEventListener("click", function (e) {
+        var b = e.target.closest("[data-preset]");
+        if (!b) return;
+        var p = D.skillPresets[parseInt(b.getAttribute("data-preset"), 10)];
+        if (!p) return;
+        $("smName").value = p.name || "";
+        $("smDesc").value = p.desc || "";
+        $("smTitle").value = p.title || "";
+        $("smSteps").value = (p.steps || []).join("\n");
+        $("smRules").value = (p.rules || []).join("\n");
+        $("smExample").value = p.example || "";
+        smGen();
+        var act = $("smPresets").querySelector(".sm-preset.active"); if (act) act.classList.remove("active");
+        b.classList.add("active");
+      });
+    }
     if ($("smCopy")) $("smCopy").addEventListener("click", function () {
       if (navigator.clipboard) navigator.clipboard.writeText($("smPreview").textContent).then(function () {
         var b = $("smCopy"); b.textContent = "已複製"; setTimeout(function () { b.textContent = "複製"; }, 1500);
@@ -972,6 +1138,7 @@
     var steps = document.querySelectorAll(".path-step");
     var el = steps[i];
     if (!el) return;
+    revealLibraryFor(el);
     el.scrollIntoView({ behavior: "smooth", block: "center" });
     el.classList.add("flash");
     setTimeout(function () { el.classList.remove("flash"); }, 1700);
@@ -1010,6 +1177,7 @@
           if (Array.isArray(d.known)) localStorage.setItem(KNOWN_KEY, JSON.stringify(d.known));
           if (d.notes && typeof d.notes === "object") localStorage.setItem(NOTES_KEY, JSON.stringify(d.notes));
           if (d.profile) localStorage.setItem(PROFILE_KEY, JSON.stringify(d.profile));
+          if (Array.isArray(d.lessons)) localStorage.setItem(LESSONS_KEY, JSON.stringify(d.lessons));
           window.location.reload();
         } catch (e) {
           window.alert("匯入失敗：檔案格式不對。請選擇之前用「匯出進度」存下的 JSON 檔。");
@@ -1032,13 +1200,14 @@
     for (var i = 0; i < 32; i++) s += c[Math.floor(Math.random() * c.length)];
     return s;
   }
-  function gatherData() { return { progress: loadProg(), known: loadKnown(), notes: loadNotes(), profile: loadProfile() }; }
+  function gatherData() { return { progress: loadProg(), known: loadKnown(), notes: loadNotes(), profile: loadProfile(), lessons: loadLessonsDone() }; }
   function applyData(d) {
     if (!d) return;
     if (Array.isArray(d.progress)) localStorage.setItem(PROG_KEY, JSON.stringify(d.progress));
     if (Array.isArray(d.known)) localStorage.setItem(KNOWN_KEY, JSON.stringify(d.known));
     if (d.notes && typeof d.notes === "object") localStorage.setItem(NOTES_KEY, JSON.stringify(d.notes));
     if (d.profile) localStorage.setItem(PROFILE_KEY, JSON.stringify(d.profile));
+    if (Array.isArray(d.lessons)) localStorage.setItem(LESSONS_KEY, JSON.stringify(d.lessons));
   }
   function cloudPush(cb) {
     var s = loadSync();
@@ -1157,6 +1326,11 @@
 
   function buildPalIndex() {
     var ix = [];
+    (D.units || []).forEach(function (u) {
+      u.items.forEach(function (it) {
+        ix.push({ g: "課程", title: it.no + "　" + it.title, sub: "單元 " + u.no + "・" + u.title, hay: (it.title + " " + u.title).toLowerCase(), act: { k: "goto", sel: "#/lesson/" + it.id } });
+      });
+    });
     allTools.forEach(function (t, i) {
       ix.push({ g: "工具", title: t.name, sub: t.tagline || "", hay: (t.name + " " + (t.tagline || "") + " " + (t.tags || []).join(" ") + " " + (t.intro || "")).toLowerCase(), act: { k: "tool", i: i } });
     });
@@ -1167,7 +1341,7 @@
       ix.push({ g: "學習路徑", title: "第 " + (i + 1) + " 步：" + p.title, sub: p.week || "", hay: (p.title + " " + p.action).toLowerCase(), act: { k: "step", i: i } });
     });
     D.resources.forEach(function (r) {
-      ix.push({ g: "課程", title: r.name, sub: r.by || "", hay: (r.name + " " + r.by + " " + r.desc + " " + (r.learn || "")).toLowerCase(), act: { k: "url", u: r.url } });
+      ix.push({ g: "資源", title: r.name, sub: r.by || "", hay: (r.name + " " + r.by + " " + r.desc + " " + (r.learn || "")).toLowerCase(), act: { k: "url", u: r.url } });
     });
     D.bigNews.concat(D.news).forEach(function (n) {
       ix.push({ g: "動態", title: n.title, sub: n.date || "", hay: (n.title + " " + (n.point || n.body || "")).toLowerCase(), act: { k: "url", u: n.url } });
@@ -1187,13 +1361,13 @@
     (D.agentTopics || []).forEach(function (t) {
       ix.push({ g: "深入主題", title: t.title, sub: "編碼代理／Skills", hay: (t.title + " " + t.body).toLowerCase(), act: { k: "goto", sel: "#agents" } });
     });
-    [["先學這個（Claude＋Codex）", "#core"], ["新手指南", "#guide"], ["學習路徑", "#path"], ["串接地圖", "#flow"], ["工具庫", "#tools"], ["該掌握的技能", "#skills"], ["編碼代理", "#agents"], ["做一個 Skill", "#skillmaker"], ["學習資源", "#resources"], ["練習專案", "#projects"], ["名詞速查", "#glossary"], ["常見問題", "#faq"], ["最新動態", "#news"], ["值得追蹤", "#follows"]].forEach(function (s) {
+    [["課程總覽", "#/"], ["名詞速查", "#glossary"], ["工具庫", "#tools"], ["練習專案", "#projects"], ["該掌握的技能", "#skills"], ["編碼代理", "#agents"], ["做一個 Skill", "#skillmaker"], ["學習資源", "#resources"], ["串接地圖", "#flow"], ["最新動態", "#news"], ["值得追蹤", "#follows"], ["參考區", "#/ref"]].forEach(function (s) {
       ix.push({ g: "前往區塊", title: s[0], sub: "跳到該區塊", hay: s[0].toLowerCase(), act: { k: "goto", sel: s[1] } });
     });
     return ix;
   }
   var palIndex = buildPalIndex();
-  var PAL_ORDER = ["工具", "技能", "名詞", "練習專案", "深入主題", "常見問題", "學習路徑", "課程", "動態", "追蹤", "前往區塊"];
+  var PAL_ORDER = ["課程", "工具", "技能", "名詞", "練習專案", "深入主題", "常見問題", "學習路徑", "資源", "動態", "追蹤", "前往區塊"];
 
   function renderPal(q) {
     q = (q || "").trim().toLowerCase();
@@ -1242,7 +1416,7 @@
     else if (a.k === "term") showModal(glossaryModalHtml(glossary[a.i]));
     else if (a.k === "step") scrollToStep(a.i);
     else if (a.k === "url") window.open(a.u, "_blank", "noopener");
-    else if (a.k === "goto") { var el = document.querySelector(a.sel); if (el) el.scrollIntoView({ behavior: "smooth" }); }
+    else if (a.k === "goto") { location.hash = a.sel; }
   }
   function openPalette() {
     if (!palette) return;
@@ -1358,4 +1532,173 @@
       try { localStorage.setItem("ai-lib-theme", isDark ? "light" : "dark"); } catch (e) {}
     });
   }
+
+  // ================= 課程平台：路由 + 課程總覽 + 上課頁 =================
+  var UNITS = D.units || [];
+  var CURRIC = [];
+  for (var _ui = 0; _ui < UNITS.length; _ui++) {
+    for (var _ii = 0; _ii < UNITS[_ui].items.length; _ii++) {
+      CURRIC.push({ unit: UNITS[_ui], item: UNITS[_ui].items[_ii] });
+    }
+  }
+  function lessonById(id) {
+    for (var i = 0; i < D.lessons.length; i++) { if (D.lessons[i].id === id) return D.lessons[i]; }
+    return null;
+  }
+  function curricIndex(id) {
+    for (var i = 0; i < CURRIC.length; i++) { if (CURRIC[i].item.id === id) return i; }
+    return -1;
+  }
+  function doneList() { return loadLessonsDone(); }
+  function isItemDone(id) { return doneList().indexOf(id) !== -1; }
+
+  function renderHomeCta() {
+    if (!$("homeCta") || !CURRIC.length) return;
+    var done = doneList();
+    var firstId = CURRIC[0].item.id;
+    var nextC = null;
+    for (var i = 0; i < CURRIC.length; i++) { if (done.indexOf(CURRIC[i].item.id) === -1) { nextC = CURRIC[i]; break; } }
+    var html;
+    if (done.length && nextC) {
+      html = '<a class="pill" href="#/lesson/' + esc(nextC.item.id) + '">繼續上次 · 第 ' + esc(nextC.item.no) + ' 課</a>' +
+        '<a class="pill pill-ghost" href="#/lesson/' + esc(firstId) + '">從第一課開始</a>';
+    } else {
+      html = '<a class="pill" href="#/lesson/' + esc(firstId) + '">從第一課開始</a>';
+    }
+    $("homeCta").innerHTML = html;
+  }
+
+  function renderSyllabus() {
+    if (!$("syllabusContainer")) return;
+    var done = doneList();
+    var total = CURRIC.length, dc = 0;
+    for (var i = 0; i < CURRIC.length; i++) { if (done.indexOf(CURRIC[i].item.id) !== -1) dc++; }
+    var pct = total ? Math.round(dc / total * 100) : 0;
+    var h = '<div class="syl-progress"><div class="cp-bar"><div class="cp-fill" style="width:' + pct + '%"></div></div>' +
+      '<span class="cp-text">整體進度 <b>' + dc + '</b> / ' + total + ' 課</span></div>';
+    h += UNITS.map(function (u) {
+      var uDone = 0;
+      var items = u.items.map(function (it) {
+        var full = lessonById(it.id);
+        var isDone = done.indexOf(it.id) !== -1;
+        if (isDone) uDone++;
+        var right = full ? (isDone ? '<span class="syl-check">' + icoCheck + '</span>' : '<span class="syl-go">開始' + arrow + '</span>')
+          : '<span class="soon-tag">即將推出</span>';
+        var inner = '<span class="syl-no">' + esc(it.no) + '</span>' +
+          '<span class="syl-item-main"><span class="syl-item-title">' + esc(it.title) + '</span>' +
+          '<span class="syl-item-meta">' + esc(it.tool) + ' · ' + esc(it.time) + (full ? ' · ' + lessonKind(full) : '') + '</span></span>' + right;
+        return full
+          ? '<a class="syl-item' + (isDone ? ' done' : '') + '" href="#/lesson/' + esc(it.id) + '">' + inner + '</a>'
+          : '<div class="syl-item soon">' + inner + '</div>';
+      }).join("");
+      return '<section class="syl-unit">' +
+        '<div class="syl-unit-head"><span class="syl-unit-no">單元 ' + esc(u.no) + '</span>' +
+        '<h3>' + esc(u.title) + '</h3><span class="syl-unit-prog">' + uDone + '/' + u.items.length + '</span></div>' +
+        '<p class="syl-unit-goal">' + esc(u.goal) + '</p>' +
+        '<div class="syl-items">' + items + '</div></section>';
+    }).join("");
+    $("syllabusContainer").innerHTML = h;
+    renderHomeCta();
+  }
+
+  function navBtn(c, isNext) {
+    if (!c) return '<span class="lr-navbtn empty"></span>';
+    return '<a class="lr-navbtn' + (isNext ? ' next' : '') + '" href="#/lesson/' + esc(c.item.id) + '">' +
+      '<span class="lr-navdir">' + (isNext ? '下一課' : '上一課') + '</span>' +
+      '<span class="lr-navttl">' + esc(c.item.no) + ' ' + esc(c.item.title) + '</span></a>';
+  }
+
+  function pasteBlockHtml(caption, code) {
+    return '<div class="lstep-paste"><div class="lstep-paste-head"><span>' + esc(caption || "照抄貼上") + '</span>' +
+      '<button type="button" class="mini-btn" data-copy-lesson>複製</button></div>' +
+      '<pre class="code"><code>' + esc(code) + '</code></pre></div>';
+  }
+  function lessonSectionHtml(s) {
+    var h = '<div class="lsec">';
+    if (s.h) h += '<h3>' + esc(s.h) + '</h3>';
+    if (s.p) h += '<p class="lsec-p">' + esc(s.p) + '</p>';
+    if (s.list && s.list.length) h += '<ul class="lsec-list">' + s.list.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("") + '</ul>';
+    if (s.analogy) h += '<p class="lsec-analogy"><span>打個比方</span>' + esc(s.analogy) + '</p>';
+    if (s.example && s.example.code) h += pasteBlockHtml(s.example.caption || "試試看，貼這段", s.example.code);
+    return h + '</div>';
+  }
+  function lessonKind(L) { return (L && L.steps && L.steps.length) ? "實作課" : "觀念課"; }
+
+  function renderLessonReader(id) {
+    var reader = $("lessonReader");
+    if (!reader) return;
+    var idx = curricIndex(id);
+    var cur = idx >= 0 ? CURRIC[idx] : null;
+    var prev = idx > 0 ? CURRIC[idx - 1] : null;
+    var next = (idx >= 0 && idx < CURRIC.length - 1) ? CURRIC[idx + 1] : null;
+    var L = lessonById(id);
+    var crumb = cur ? '單元 ' + esc(cur.unit.no) + ' · ' + esc(cur.unit.title) : '課程';
+    var h = '<div class="lr-top"><a class="lr-back" href="#/">← 回課程總覽</a><span class="lr-crumb">' + crumb + '</span></div>';
+    var hasBody = L && ((L.steps && L.steps.length) || (L.sections && L.sections.length));
+    if (hasBody) {
+      var isDone = isLessonDone(L.id);
+      h += '<div class="lr-head"><span class="lr-no">第 ' + (cur ? esc(cur.item.no) : '') + ' 課</span>' +
+        '<span class="lr-kind">' + lessonKind(L) + '</span>' +
+        '<h1>' + esc(L.title) + '</h1><p class="lr-meta">' + esc(L.tool) + ' · ' + esc(L.time) + ' · ' + esc(L.cost || '免費') + '</p></div>';
+      if (L.goal) h += '<p class="lesson-goal"><span>這課結束你會</span>' + esc(L.goal) + '</p>';
+      if (L.prereq) h += '<p class="lesson-prereq"><span>需要先準備</span>' + esc(L.prereq) + '</p>';
+      if (L.sections && L.sections.length) h += '<div class="lesson-sections">' + L.sections.map(lessonSectionHtml).join("") + '</div>';
+      if (L.steps && L.steps.length) h += '<ol class="lesson-steps">' + L.steps.map(lessonStepHtml).join("") + '</ol>';
+      if (L.practice && (L.practice.p || L.practice.title)) {
+        h += '<div class="lesson-practice"><span class="lp-h">練習' + (L.practice.title ? '：' + esc(L.practice.title) : '') + '</span>' +
+          (L.practice.p ? '<p>' + esc(L.practice.p) + '</p>' : '') +
+          (L.practice.paste ? pasteBlockHtml("起手式，照抄再改", L.practice.paste) : '') + '</div>';
+      }
+      if (L.check && L.check.length) {
+        h += '<div class="lesson-check"><span class="lesson-check-h">過關檢查</span><ul>' +
+          L.check.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join("") + '</ul></div>';
+      }
+      if (L.recap) h += '<p class="lesson-recap"><span>你學會了</span>' + esc(L.recap) + '</p>';
+      h += '<div class="lr-foot"><button type="button" class="btn btn-primary lesson-done-btn' + (isDone ? ' on' : '') +
+        '" data-lesson-done="' + esc(L.id) + '">' + icoCheck + (isDone ? '已完成（再按取消）' : '我完成這一課了') + '</button></div>';
+    } else {
+      h += '<div class="lr-head"><span class="lr-no">第 ' + (cur ? esc(cur.item.no) : '') + ' 課</span>' +
+        '<h1>' + (cur ? esc(cur.item.title) : '這一課') + '</h1>' +
+        (cur ? '<p class="lr-meta">' + esc(cur.item.tool) + ' · ' + esc(cur.item.time) + '</p>' : '') + '</div>';
+      h += '<div class="lr-soon"><p>這一課的完整內容<strong>正在製作中</strong>。整套課程一課一課補齊——你可以先上已經開放的課（單元 1、2、5 有完整內容），或用下面的按鈕接著往下看。</p>' +
+        '<a class="btn btn-ghost" href="#/">回課程總覽挑一課</a></div>';
+    }
+    h += '<div class="lr-nav">' + navBtn(prev, false) + navBtn(next, true) + '</div>';
+    reader.innerHTML = h;
+  }
+
+  var readerEl = $("lessonReader");
+  if (readerEl) {
+    readerEl.addEventListener("click", function (e) {
+      var copy = e.target.closest("[data-copy-lesson]");
+      if (copy) {
+        var code = copy.closest(".lstep-paste").querySelector("code");
+        if (code && navigator.clipboard) navigator.clipboard.writeText(code.textContent).then(function () {
+          copy.textContent = "已複製"; setTimeout(function () { copy.textContent = "複製"; }, 1500);
+        });
+        return;
+      }
+      var d = e.target.closest("[data-lesson-done]");
+      if (d) { var lid = d.getAttribute("data-lesson-done"); toggleLessonDone(lid); renderLessonReader(lid); }
+    });
+  }
+
+  function showView(id) {
+    var vs = document.querySelectorAll(".view");
+    for (var i = 0; i < vs.length; i++) { vs[i].hidden = (vs[i].id !== id); }
+  }
+  function route() {
+    var h = (location.hash || "").replace(/^#\/?/, "");
+    if (h.indexOf("lesson/") === 0) {
+      showView("view-lesson"); renderLessonReader(h.slice(7)); window.scrollTo(0, 0);
+    } else if (h === "") {
+      showView("view-home"); renderSyllabus(); window.scrollTo(0, 0);
+    } else {
+      showView("view-reference");
+      var el = document.getElementById(h);
+      if (el) el.scrollIntoView(); else window.scrollTo(0, 0);
+    }
+  }
+  window.addEventListener("hashchange", route);
+  route();
 })();
