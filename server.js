@@ -122,7 +122,14 @@ const server = http.createServer((req, res) => {
     return handleApi(req, res, url);
   }
 
-  let urlPath = decodeURIComponent(url.pathname);
+  let urlPath;
+  try {
+    urlPath = decodeURIComponent(url.pathname);
+  } catch (e) {
+    // 格式錯誤的網址（例如掃描器送 /%zz）不該讓整個伺服器崩潰
+    res.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
+    return res.end("Bad Request");
+  }
   if (urlPath === "/") urlPath = "/index.html";
 
   // Resolve within ROOT to prevent path traversal.
