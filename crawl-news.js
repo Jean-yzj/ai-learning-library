@@ -45,6 +45,37 @@ function categorize(title) {
   return "工具更新";
 }
 
+// 若設了 ANTHROPIC_API_KEY，用 Claude 把英文標題翻成繁中（保留產品／公司名）；沒設就維持原文。
+// 可用 TRANSLATE_MODEL 覆蓋模型。用法：ANTHROPIC_API_KEY=sk-... npm run crawl-news
+async function translateTitles(items) {
+  var key = process.env.ANTHROPIC_API_KEY;
+  var hasEnglish = items.some(function (x) { return x.title && /[A-Za-z]/.test(x.title); });
+  if (!key || !hasEnglish) return items;
+  try {
+    var titles = items.map(function (x) { return x.title; });
+    var res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+      body: JSON.stringify({
+        model: process.env.TRANSLATE_MODEL || "claude-haiku-4-5-20251001",
+        max_tokens: 3000,
+        messages: [{ role: "user", content: "把下面 JSON 陣列裡的英文新聞標題，逐一翻成自然、精煉的繁體中文。保留產品與公司專有名詞的原文（例如 GPT-5.6、OpenAI、ChatGPT、Codex、Gemini、Claude、Fable 5）。只回傳一個等長的 JSON 字串陣列，順序與輸入完全一致，不要任何多餘文字或說明。\n\n" + JSON.stringify(titles) }],
+      }),
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    var data = await res.json();
+    var text = (data && data.content && data.content[0] && data.content[0].text) || "";
+    var m = text.match(/\[[\s\S]*\]/);
+    if (!m) throw new Error("回傳不是 JSON 陣列");
+    var arr = JSON.parse(m[0]);
+    items.forEach(function (x, i) { if (arr[i] && typeof arr[i] === "string") x.titleZh = arr[i]; });
+    console.log("已翻譯 " + arr.filter(Boolean).length + " 則標題為繁中。");
+  } catch (e) {
+    console.error("翻譯略過（維持英文原標題）：" + e.message);
+  }
+  return items;
+}
+
 async function fetchFeed(f) {
   try {
     var res = await fetch(f.url, { headers: { "user-agent": "Mozilla/5.0 (ai-learning-library news crawler)" } });
@@ -90,6 +121,7 @@ async function fetchFeed(f) {
     console.error("沒抓到任何項目（可能是網路不通或來源改版）。保留現有 data/news-feed.js 不覆蓋。");
     process.exit(1);
   }
+  top = await translateTitles(top);
   var today = new Date().toISOString().slice(0, 10);
   var out = "// 自動產生：由 crawl-news.js 於 " + today + " 抓取。手動改會在下次爬取被覆蓋。\n" +
     "(function () {\n  var D = window.SITE_DATA;\n  if (!D) return;\n  D.crawledNews = " +

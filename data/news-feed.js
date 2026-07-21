@@ -1,176 +1,32 @@
-// 自動產生：由 crawl-news.js 於 2026-07-12 抓取。手動改會在下次爬取被覆蓋。
+// 自動產生：由 crawl-news.js 於 2026-07-12 抓取。標題經翻譯（titleZh）。手動改會在下次爬取被覆蓋。
 (function () {
   var D = window.SITE_DATA;
   if (!D) return;
   D.crawledNews = [
-    {
-      "source": "The Verge AI",
-      "title": "Apple’s failed self-driving car program left a legacy of powerful AI chips",
-      "url": "https://www.theverge.com/tech/964519/apple-silicon-self-driving-car-ai-m7-ultra",
-      "date": "2026-07-12",
-      "cat": "工具更新"
-    },
-    {
-      "source": "The Verge AI",
-      "title": "The fight against AI data centers is just beginning",
-      "url": "https://www.theverge.com/column/963346/ai-data-centers-fight",
-      "date": "2026-07-12",
-      "cat": "工具更新"
-    },
-    {
-      "source": "OpenAI",
-      "title": "How Deutsche Telekom is rewiring telecommunications with AI",
-      "url": "https://openai.com/index/deutsche-telekom",
-      "date": "2026-07-10",
-      "cat": "工具更新"
-    },
-    {
-      "source": "The Verge AI",
-      "title": "Meta turns off the Instagram feature that let users make AI deepfakes of public accounts",
-      "url": "https://www.theverge.com/tech/964416/meta-instagram-ai-muse-image-deepfakes",
-      "date": "2026-07-10",
-      "cat": "工具更新"
-    },
-    {
-      "source": "The Verge AI",
-      "title": "Apple sues OpenAI for allegedly stealing hardware secrets",
-      "url": "https://www.theverge.com/tech/964350/apple-openai-lawsuit-trade-secrets",
-      "date": "2026-07-10",
-      "cat": "企業動態"
-    },
-    {
-      "source": "The Verge AI",
-      "title": "Instagram’s Adam Mosseri: If you don’t like AI, ‘then you shouldn’t have it in your feed’",
-      "url": "https://www.theverge.com/tech/963961/instagram-adam-mosseri-ai-feed-filters",
-      "date": "2026-07-10",
-      "cat": "工具更新"
-    },
-    {
-      "source": "The Verge AI",
-      "title": "Would you host part of an AI data center in your home?",
-      "url": "https://www.theverge.com/ai-artificial-intelligence/963930/sunrun-distributed-ai-data-center",
-      "date": "2026-07-10",
-      "cat": "工具更新"
-    },
-    {
-      "source": "The Verge AI",
-      "title": "Microsoft’s carbon emissions went up 25 percent last year",
-      "url": "https://www.theverge.com/tech/963728/microsoft-sustainability-report-2026",
-      "date": "2026-07-10",
-      "cat": "企業動態"
-    },
-    {
-      "source": "OpenAI",
-      "title": "GPT-5.6 is now the preferred model in Microsoft 365 Copilot",
-      "url": "https://openai.com/index/gpt-5-6-preferred-model-microsoft-365-copilot",
-      "date": "2026-07-09",
-      "cat": "模型發布"
-    },
-    {
-      "source": "OpenAI",
-      "title": "GPT-5.6: Frontier intelligence that scales with your ambition",
-      "url": "https://openai.com/index/gpt-5-6",
-      "date": "2026-07-09",
-      "cat": "模型發布"
-    },
-    {
-      "source": "OpenAI",
-      "title": "ChatGPT is now a partner for your most ambitious work",
-      "url": "https://openai.com/index/chatgpt-for-your-most-ambitious-work",
-      "date": "2026-07-09",
-      "cat": "企業動態"
-    },
-    {
-      "source": "OpenAI",
-      "title": "GPT-5.5 Bio Bug Bounty",
-      "url": "https://openai.com/index/bio-bug-bounty",
-      "date": "2026-07-09",
-      "cat": "模型發布"
-    },
-    {
-      "source": "The Verge AI",
-      "title": "Fidji Simo steps down from leading OpenAI’s AGI work due to illness",
-      "url": "https://www.theverge.com/ai-artificial-intelligence/963738/openai-fidji-simo-steps-down-ceo-advisor",
-      "date": "2026-07-09",
-      "cat": "企業動態"
-    },
-    {
-      "source": "The Verge AI",
-      "title": "The ChatGPT browser is already dead",
-      "url": "https://www.theverge.com/ai-artificial-intelligence/963654/openai-chatgpt-atlas-ai-browser-shut-down-sunset",
-      "date": "2026-07-09",
-      "cat": "模型發布"
-    },
-    {
-      "source": "The Verge AI",
-      "title": "Google will now tell you if an ad was made with AI",
-      "url": "https://www.theverge.com/ai-artificial-intelligence/963628/google-ai-generated-ads-label",
-      "date": "2026-07-09",
-      "cat": "工具更新"
-    },
-    {
-      "source": "OpenAI",
-      "title": "Our approach to government and national security partnerships",
-      "url": "https://openai.com/index/government-national-security-partnerships",
-      "date": "2026-07-08",
-      "cat": "企業動態"
-    },
-    {
-      "source": "OpenAI",
-      "title": "Separating signal from noise in coding evaluations",
-      "url": "https://openai.com/index/separating-signal-from-noise-coding-evaluations",
-      "date": "2026-07-08",
-      "cat": "工具更新"
-    },
-    {
-      "source": "OpenAI",
-      "title": "Helping K–12 educators build practical AI skills",
-      "url": "https://openai.com/index/k-12-educators-practical-skills",
-      "date": "2026-07-08",
-      "cat": "工具更新"
-    },
-    {
-      "source": "OpenAI",
-      "title": "Introducing GPT-Live",
-      "url": "https://openai.com/index/introducing-gpt-live",
-      "date": "2026-07-08",
-      "cat": "模型發布"
-    },
-    {
-      "source": "OpenAI",
-      "title": "MUFG aims to become AI-native with OpenAI",
-      "url": "https://openai.com/index/mufg",
-      "date": "2026-07-07",
-      "cat": "工具更新"
-    },
-    {
-      "source": "OpenAI",
-      "title": "Australian Payments Plus moves faster with ChatGPT and Codex",
-      "url": "https://openai.com/index/australian-payments-plus",
-      "date": "2026-07-07",
-      "cat": "模型發布"
-    },
-    {
-      "source": "Google AI",
-      "title": "Expanding Managed Agents in Gemini API: background tasks, remote MCP and more",
-      "url": "https://blog.google/innovation-and-ai/technology/developers-tools/expanding-managed-agents-gemini-api/",
-      "date": "2026-07-07",
-      "cat": "模型發布"
-    },
-    {
-      "source": "Google DeepMind",
-      "title": "Google DeepMind and A24 announce first-of-its-kind research partnership",
-      "url": "https://deepmind.google/blog/google-deepmind-and-a24-announce-first-of-its-kind-research-partnership/",
-      "date": "2026-07-03",
-      "cat": "企業動態"
-    },
-    {
-      "source": "Anthropic",
-      "title": "More details on Fable 5’s cyber safeguards and our jailbreak framework",
-      "url": "https://www.anthropic.com/news/fable-safeguards-jailbreak-framework",
-      "date": "2026-07-02",
-      "cat": "工具更新"
-    }
+    { "source": "The Verge AI", "title": "Apple’s failed self-driving car program left a legacy of powerful AI chips", "titleZh": "Apple 失敗的自駕車計畫，留下了強大的 AI 晶片遺產", "url": "https://www.theverge.com/tech/964519/apple-silicon-self-driving-car-ai-m7-ultra", "date": "2026-07-12", "cat": "企業動態" },
+    { "source": "The Verge AI", "title": "The fight against AI data centers is just beginning", "titleZh": "反對 AI 資料中心的抗爭才剛開始", "url": "https://www.theverge.com/column/963346/ai-data-centers-fight", "date": "2026-07-12", "cat": "工具更新" },
+    { "source": "OpenAI", "title": "How Deutsche Telekom is rewiring telecommunications with AI", "titleZh": "德國電信如何用 AI 重塑電信業", "url": "https://openai.com/index/deutsche-telekom", "date": "2026-07-10", "cat": "企業動態" },
+    { "source": "The Verge AI", "title": "Meta turns off the Instagram feature that let users make AI deepfakes of public accounts", "titleZh": "Meta 關閉 Instagram 讓用戶對公眾帳號製作 AI 深偽的功能", "url": "https://www.theverge.com/tech/964416/meta-instagram-ai-muse-image-deepfakes", "date": "2026-07-10", "cat": "工具更新" },
+    { "source": "The Verge AI", "title": "Apple sues OpenAI for allegedly stealing hardware secrets", "titleZh": "Apple 控告 OpenAI 涉嫌竊取硬體機密", "url": "https://www.theverge.com/tech/964350/apple-openai-lawsuit-trade-secrets", "date": "2026-07-10", "cat": "企業動態" },
+    { "source": "The Verge AI", "title": "Instagram’s Adam Mosseri: If you don’t like AI, ‘then you shouldn’t have it in your feed’", "titleZh": "Instagram 負責人 Adam Mosseri：不喜歡 AI，「那就別讓它出現在你的動態」", "url": "https://www.theverge.com/tech/963961/instagram-adam-mosseri-ai-feed-filters", "date": "2026-07-10", "cat": "工具更新" },
+    { "source": "The Verge AI", "title": "Would you host part of an AI data center in your home?", "titleZh": "你願意在家裡放一部分的 AI 資料中心嗎？", "url": "https://www.theverge.com/ai-artificial-intelligence/963930/sunrun-distributed-ai-data-center", "date": "2026-07-10", "cat": "工具更新" },
+    { "source": "The Verge AI", "title": "Microsoft’s carbon emissions went up 25 percent last year", "titleZh": "Microsoft 去年碳排放量上升 25%", "url": "https://www.theverge.com/tech/963728/microsoft-sustainability-report-2026", "date": "2026-07-10", "cat": "企業動態" },
+    { "source": "OpenAI", "title": "GPT-5.6 is now the preferred model in Microsoft 365 Copilot", "titleZh": "GPT-5.6 成為 Microsoft 365 Copilot 的預設模型", "url": "https://openai.com/index/gpt-5-6-preferred-model-microsoft-365-copilot", "date": "2026-07-09", "cat": "模型發布" },
+    { "source": "OpenAI", "title": "GPT-5.6: Frontier intelligence that scales with your ambition", "titleZh": "GPT-5.6：隨你野心擴展的前沿智慧", "url": "https://openai.com/index/gpt-5-6", "date": "2026-07-09", "cat": "模型發布" },
+    { "source": "OpenAI", "title": "ChatGPT is now a partner for your most ambitious work", "titleZh": "ChatGPT 成為你最有野心工作的夥伴", "url": "https://openai.com/index/chatgpt-for-your-most-ambitious-work", "date": "2026-07-09", "cat": "企業動態" },
+    { "source": "OpenAI", "title": "GPT-5.5 Bio Bug Bounty", "titleZh": "GPT-5.5 生物安全漏洞獎金計畫", "url": "https://openai.com/index/bio-bug-bounty", "date": "2026-07-09", "cat": "模型發布" },
+    { "source": "The Verge AI", "title": "Fidji Simo steps down from leading OpenAI’s AGI work due to illness", "titleZh": "Fidji Simo 因病卸下 OpenAI AGI 業務的領導職", "url": "https://www.theverge.com/ai-artificial-intelligence/963738/openai-fidji-simo-steps-down-ceo-advisor", "date": "2026-07-09", "cat": "企業動態" },
+    { "source": "The Verge AI", "title": "The ChatGPT browser is already dead", "titleZh": "ChatGPT 瀏覽器已經夭折", "url": "https://www.theverge.com/ai-artificial-intelligence/963654/openai-chatgpt-atlas-ai-browser-shut-down-sunset", "date": "2026-07-09", "cat": "工具更新" },
+    { "source": "The Verge AI", "title": "Google will now tell you if an ad was made with AI", "titleZh": "Google 現在會標示廣告是否由 AI 製作", "url": "https://www.theverge.com/ai-artificial-intelligence/963628/google-ai-generated-ads-label", "date": "2026-07-09", "cat": "工具更新" },
+    { "source": "OpenAI", "title": "Our approach to government and national security partnerships", "titleZh": "OpenAI：我們對政府與國安合作的做法", "url": "https://openai.com/index/government-national-security-partnerships", "date": "2026-07-08", "cat": "企業動態" },
+    { "source": "OpenAI", "title": "Separating signal from noise in coding evaluations", "titleZh": "在程式碼評測中分辨真實訊號與雜訊", "url": "https://openai.com/index/separating-signal-from-noise-coding-evaluations", "date": "2026-07-08", "cat": "工具更新" },
+    { "source": "OpenAI", "title": "Helping K–12 educators build practical AI skills", "titleZh": "協助中小學（K–12）教師建立實用的 AI 技能", "url": "https://openai.com/index/k-12-educators-practical-skills", "date": "2026-07-08", "cat": "工具更新" },
+    { "source": "OpenAI", "title": "Introducing GPT-Live", "titleZh": "推出 GPT-Live", "url": "https://openai.com/index/introducing-gpt-live", "date": "2026-07-08", "cat": "模型發布" },
+    { "source": "OpenAI", "title": "MUFG aims to become AI-native with OpenAI", "titleZh": "三菱日聯（MUFG）攜手 OpenAI 邁向 AI 原生", "url": "https://openai.com/index/mufg", "date": "2026-07-07", "cat": "企業動態" },
+    { "source": "OpenAI", "title": "Australian Payments Plus moves faster with ChatGPT and Codex", "titleZh": "Australian Payments Plus 靠 ChatGPT 與 Codex 加速", "url": "https://openai.com/index/australian-payments-plus", "date": "2026-07-07", "cat": "企業動態" },
+    { "source": "Google AI", "title": "Expanding Managed Agents in Gemini API: background tasks, remote MCP and more", "titleZh": "Gemini API 擴充代理功能：背景任務、遠端 MCP 等", "url": "https://blog.google/innovation-and-ai/technology/developers-tools/expanding-managed-agents-gemini-api/", "date": "2026-07-07", "cat": "模型發布" },
+    { "source": "Google DeepMind", "title": "Google DeepMind and A24 announce first-of-its-kind research partnership", "titleZh": "Google DeepMind 與 A24 宣布首創的研究合作", "url": "https://deepmind.google/blog/google-deepmind-and-a24-announce-first-of-its-kind-research-partnership/", "date": "2026-07-03", "cat": "企業動態" },
+    { "source": "Anthropic", "title": "More details on Fable 5’s cyber safeguards and our jailbreak framework", "titleZh": "更多關於 Fable 5 資安防護與越獄防禦框架的細節", "url": "https://www.anthropic.com/news/fable-safeguards-jailbreak-framework", "date": "2026-07-02", "cat": "工具更新" }
   ];
   D.crawledNewsAt = "2026-07-12";
 })();

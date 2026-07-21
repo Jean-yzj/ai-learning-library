@@ -776,7 +776,7 @@
           '<div class="news-card-head"><span class="news-date">' + esc(n.date || "") + "</span>" +
           (n.cat ? '<span class="news-cat">' + esc(n.cat) + "</span>" : "") +
           '<span class="news-source">' + esc(n.source || "") + "</span></div>" +
-          "<h4>" + esc(n.title) + "</h4>" +
+          "<h4>" + esc(n.titleZh || n.title) + "</h4>" +
           (n.why ? '<p class="why-line"><span>跟你有關</span>' + esc(n.why) + "</p>" : "") +
           '<div class="card-foot"><span></span><span class="go">看原文' + arrow + "</span></div></a>";
       }).join("");
@@ -1619,7 +1619,10 @@
     if (s.p) h += '<p class="lsec-p">' + esc(s.p) + '</p>';
     if (s.list && s.list.length) h += '<ul class="lsec-list">' + s.list.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("") + '</ul>';
     if (s.analogy) h += '<p class="lsec-analogy"><span>打個比方</span>' + esc(s.analogy) + '</p>';
-    if (s.example && s.example.code) h += pasteBlockHtml(s.example.caption || "試試看，貼這段", s.example.code);
+    if (s.example) {
+      if (typeof s.example === "string") h += '<p class="lsec-p"><strong>例如：</strong>' + esc(s.example) + '</p>';
+      else if (s.example.code) h += pasteBlockHtml(s.example.caption || "試試看，貼這段", s.example.code);
+    }
     return h + '</div>';
   }
   function lessonKind(L) { return (L && L.steps && L.steps.length) ? "實作課" : "觀念課"; }
@@ -1644,7 +1647,9 @@
       if (L.prereq) h += '<p class="lesson-prereq"><span>需要先準備</span>' + esc(L.prereq) + '</p>';
       if (L.sections && L.sections.length) h += '<div class="lesson-sections">' + L.sections.map(lessonSectionHtml).join("") + '</div>';
       if (L.steps && L.steps.length) h += '<ol class="lesson-steps">' + L.steps.map(lessonStepHtml).join("") + '</ol>';
-      if (L.practice && (L.practice.p || L.practice.title)) {
+      if (typeof L.practice === "string" && L.practice) {
+        h += '<div class="lesson-practice"><span class="lp-h">練習</span><p>' + esc(L.practice) + '</p></div>';
+      } else if (L.practice && (L.practice.p || L.practice.title)) {
         h += '<div class="lesson-practice"><span class="lp-h">練習' + (L.practice.title ? '：' + esc(L.practice.title) : '') + '</span>' +
           (L.practice.p ? '<p>' + esc(L.practice.p) + '</p>' : '') +
           (L.practice.paste ? pasteBlockHtml("起手式，照抄再改", L.practice.paste) : '') + '</div>';
